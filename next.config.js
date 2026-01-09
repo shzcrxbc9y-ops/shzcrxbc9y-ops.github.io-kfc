@@ -3,14 +3,16 @@ const nextConfig = {
   reactStrictMode: true,
   images: {
     domains: ['localhost'],
+    unoptimized: false,
   },
-  // Игнорируем ошибки ESLint и TypeScript во время сборки (для Netlify)
   eslint: {
     ignoreDuringBuilds: true,
   },
   typescript: {
-    ignoreBuildErrors: false, // Оставляем проверку типов, но скрипты исключены
+    ignoreBuildErrors: false,
   },
+  // Для Vercel
+  output: 'standalone',
 }
 
 module.exports = nextConfig

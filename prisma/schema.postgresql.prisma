@@ -1,5 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// This is your Prisma schema file for PostgreSQL (Vercel production)
+// Для локальной разработки используйте schema.prisma с SQLite
+// Для продакшена на Vercel скопируйте этот файл в schema.prisma
 
 generator client {
   provider = "prisma-client-js"
@@ -231,4 +232,3 @@ model UserAchievement {
   @@unique([userId, achievementId])
   @@map("user_achievements")
 }
-
