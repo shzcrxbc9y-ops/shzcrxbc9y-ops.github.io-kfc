@@ -52,7 +52,7 @@ export function SectionItem({ section }: SectionItemProps) {
       </div>
       <div className="flex items-center space-x-2">
         <Link
-          href={`/admin/sections/${section.id}/edit`}
+          href={`/admin/content/sections/${section.id}/edit`}
           className="p-2 text-primary-600 hover:bg-primary-50 rounded transition-colors"
           title="Редактировать"
         >

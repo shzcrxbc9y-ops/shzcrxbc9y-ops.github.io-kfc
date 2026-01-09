@@ -14,6 +14,17 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const data = loginSchema.parse(body)
 
+    // Проверяем подключение к базе данных
+    try {
+      await prisma.$connect()
+    } catch (dbError: any) {
+      console.error('Database connection error:', dbError)
+      return NextResponse.json(
+        { message: 'Ошибка подключения к базе данных. Проверьте настройки DATABASE_URL.' },
+        { status: 500 }
+      )
+    }
+
     // Находим пользователя
     const user = await prisma.user.findUnique({
       where: { email: data.email },
@@ -62,7 +73,7 @@ export async function POST(request: NextRequest) {
         position: user.position,
       },
     })
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { message: 'Неверные данные', errors: error.errors },
@@ -70,9 +81,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Проверка ошибок подключения к базе данных
+    if (error?.code === 'P1001' || error?.message?.includes('Can\'t reach database')) {
+      console.error('Database connection error:', error)
+      return NextResponse.json(
+        { message: 'Ошибка подключения к базе данных. Проверьте настройки DATABASE_URL.' },
+        { status: 500 }
+      )
+    }
+
     console.error('Login error:', error)
     return NextResponse.json(
-      { message: 'Ошибка входа' },
+      { 
+        message: 'Ошибка входа',
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      },
       { status: 500 }
     )
   }

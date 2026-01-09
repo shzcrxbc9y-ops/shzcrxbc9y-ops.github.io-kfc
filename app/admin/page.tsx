@@ -12,46 +12,43 @@ export default async function AdminPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Административная панель</h1>
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Административная панель</h1>
+          <p className="text-sm sm:text-base text-gray-600">Управление системой обучения и контентом</p>
+        </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <AdminCard
-          icon={<Building2 className="w-6 h-6" />}
-          title="Станции"
-          description="Управление станциями работы"
-          href="/admin/stations"
-        />
-        <AdminCard
-          icon={<FolderTree className="w-6 h-6" />}
-          title="Разделы"
-          description="Управление разделами обучения"
-          href="/admin/sections"
-        />
-        <AdminCard
-          icon={<BookOpen className="w-6 h-6" />}
-          title="Материалы"
-          description="Управление обучающими материалами"
-          href="/admin/materials"
-        />
-        <AdminCard
-          icon={<Users className="w-6 h-6" />}
-          title="Пользователи"
-          description="Управление сотрудниками"
-          href="/admin/users"
-        />
-        <AdminCard
-          icon={<Award className="w-6 h-6" />}
-          title="Тесты"
-          description="Создание и редактирование тестов"
-          href="/admin/tests"
-        />
-        <AdminCard
-          icon={<BarChart3 className="w-6 h-6" />}
-          title="Статистика"
-          description="Аналитика и отчеты"
-          href="/admin/statistics"
-        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          <AdminCard
+            icon={<BookOpen className="w-7 h-7" />}
+            title="Управление контентом"
+            description="Станции, разделы и материалы в одном месте"
+            href="/admin/content"
+            accent="blue"
+          />
+          <AdminCard
+            icon={<Users className="w-7 h-7" />}
+            title="Пользователи"
+            description="Управление сотрудниками и их доступом"
+            href="/admin/users"
+            accent="green"
+          />
+          <AdminCard
+            icon={<Award className="w-7 h-7" />}
+            title="Тесты"
+            description="Создание и редактирование тестов и вопросов"
+            href="/admin/tests"
+            accent="purple"
+          />
+          <AdminCard
+            icon={<BarChart3 className="w-7 h-7" />}
+            title="Статистика"
+            description="Аналитика, отчеты и метрики системы"
+            href="/admin/statistics"
+            accent="orange"
+          />
+        </div>
       </div>
     </div>
   )
@@ -62,20 +59,61 @@ function AdminCard({
   title,
   description,
   href,
+  accent = 'blue',
 }: {
   icon: React.ReactNode
   title: string
   description: string
   href: string
+  accent?: 'blue' | 'green' | 'purple' | 'orange'
 }) {
+  const accentColors = {
+    blue: {
+      border: 'border-blue-500',
+      icon: 'text-blue-600',
+      hover: 'hover:border-blue-600',
+      bg: 'bg-blue-50',
+    },
+    green: {
+      border: 'border-green-500',
+      icon: 'text-green-600',
+      hover: 'hover:border-green-600',
+      bg: 'bg-green-50',
+    },
+    purple: {
+      border: 'border-purple-500',
+      icon: 'text-purple-600',
+      hover: 'hover:border-purple-600',
+      bg: 'bg-purple-50',
+    },
+    orange: {
+      border: 'border-orange-500',
+      icon: 'text-orange-600',
+      hover: 'hover:border-orange-600',
+      bg: 'bg-orange-50',
+    },
+  }
+
+  const colors = accentColors[accent]
+
   return (
     <Link
       href={href}
-      className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+      className={`group bg-white rounded-lg border-l-4 ${colors.border} ${colors.hover} shadow-sm hover:shadow-md transition-all duration-200 p-4 sm:p-6 block`}
     >
-      <div className="text-primary-600 mb-4">{icon}</div>
-      <h3 className="text-xl font-semibold mb-2">{title}</h3>
-      <p className="text-gray-600">{description}</p>
+      <div className="flex items-start space-x-3 sm:space-x-4">
+        <div className={`flex-shrink-0 ${colors.icon} ${colors.bg} rounded-lg p-2 sm:p-3`}>
+          {icon}
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 group-hover:text-gray-700 transition-colors">
+            {title}
+          </h3>
+          <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+            {description}
+          </p>
+        </div>
+      </div>
     </Link>
   )
 }

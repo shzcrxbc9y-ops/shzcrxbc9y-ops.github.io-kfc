@@ -63,7 +63,7 @@ export function MaterialItem({ material }: MaterialItemProps) {
       </div>
       <div className="flex items-center space-x-2">
         <Link
-          href={`/admin/materials/${material.id}/edit`}
+          href={`/admin/content/materials/${material.id}/edit`}
           className="p-2 text-primary-600 hover:bg-primary-50 rounded transition-colors"
           title="Редактировать"
         >

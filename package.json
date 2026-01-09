@@ -12,25 +12,7 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
-    "db:seed": "tsx prisma/seed.ts",
-    "extract-info": "tsx scripts/extract-info.ts",
-    "integrate-info": "tsx scripts/integrate-info.ts",
-    "check-files": "tsx scripts/check-files.ts",
-    "test-pdf": "tsx scripts/test-pdf.ts",
-    "cleanup-materials": "tsx scripts/cleanup-materials.ts",
-    "organize-sections": "tsx scripts/organize-sections.ts",
-    "merge-stations": "tsx scripts/merge-stations.ts",
-    "fix-materials": "tsx scripts/fix-material-placement.ts",
-    "final-organize": "tsx scripts/final-organize.ts",
-    "show-structure": "tsx scripts/show-structure.ts",
-    "cleanup-training": "tsx scripts/cleanup-training-duplicates.ts",
-    "remove-duplicates": "tsx scripts/remove-all-duplicates.ts",
-    "check-all-files": "tsx scripts/check-all-files.ts",
-    "remove-pdf-text": "tsx scripts/remove-pdf-text-materials.ts",
-    "check-pdf-materials": "tsx scripts/check-pdf-materials.ts",
-    "remove-ppt-download": "tsx scripts/remove-ppt-download-materials.ts",
-    "remove-training": "tsx scripts/remove-training-materials.ts",
-    "remove-all-training": "tsx scripts/remove-all-training-materials.ts"
+    "db:seed": "tsx prisma/seed.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

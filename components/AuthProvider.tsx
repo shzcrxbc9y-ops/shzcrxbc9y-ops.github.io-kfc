@@ -46,18 +46,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const login = async (email: string, password: string) => {
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    })
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), password }),
+      })
 
-    if (!res.ok) {
-      const error = await res.json()
-      throw new Error(error.message || 'Ошибка входа')
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.message || 'Ошибка входа')
+      }
+
+      const data = await res.json()
+      
+      // Обновляем пользователя после успешного входа
+      await refreshUser()
+      
+      return data
+    } catch (error: any) {
+      // Если это ошибка сети или подключения
+      if (error.message?.includes('fetch') || error.message?.includes('network') || error.name === 'TypeError') {
+        throw new Error('Ошибка подключения к серверу. Проверьте интернет-соединение.')
+      }
+      // Пробрасываем ошибку дальше
+      throw error
     }
-
-    await refreshUser()
   }
 
   const logout = async () => {

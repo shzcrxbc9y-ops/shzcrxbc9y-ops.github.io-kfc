@@ -74,14 +74,14 @@ export function StationItem({ station }: StationItemProps) {
         </div>
         <div className="flex items-center space-x-2">
           <Link
-            href={`/admin/stations/${station.id}/edit`}
+            href={`/admin/content/stations/${station.id}/edit`}
             className="p-2 text-primary-600 hover:bg-primary-50 rounded transition-colors"
             title="Редактировать"
           >
             <Edit className="w-4 h-4" />
           </Link>
           <Link
-            href={`/admin/sections/new?stationId=${station.id}`}
+            href={`/admin/content/sections/new?stationId=${station.id}`}
             className="p-2 text-green-600 hover:bg-green-50 rounded transition-colors"
             title="Добавить раздел"
           >

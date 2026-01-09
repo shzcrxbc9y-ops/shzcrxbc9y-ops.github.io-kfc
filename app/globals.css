@@ -26,9 +26,54 @@ body {
     rgb(var(--background-start-rgb));
 }
 
+/* Улучшения для мобильных устройств */
+@layer utilities {
+  /* Плавная прокрутка */
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+  
+  /* Улучшение касаний на мобильных */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Оптимизация для iOS */
+  @supports (-webkit-touch-callout: none) {
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  }
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
 }
 
+/* Стили для медиа-контента */
+@layer components {
+  .media-container {
+    @apply max-w-4xl mx-auto;
+  }
+  
+  .media-image {
+    @apply w-full h-auto rounded-xl shadow-lg object-contain;
+    max-height: 70vh;
+  }
+  
+  .media-video {
+    @apply w-full h-full object-contain;
+  }
+  
+  .media-gallery-item {
+    @apply rounded-xl overflow-hidden shadow-lg bg-gray-50 flex items-center justify-center p-2;
+  }
+  
+  .media-gallery-image {
+    @apply w-full h-auto max-h-[400px] object-contain rounded-lg;
+  }
+}

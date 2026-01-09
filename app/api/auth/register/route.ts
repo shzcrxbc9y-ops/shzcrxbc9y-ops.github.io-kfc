@@ -16,6 +16,17 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const data = registerSchema.parse(body)
 
+    // Проверяем подключение к базе данных
+    try {
+      await prisma.$connect()
+    } catch (dbError: any) {
+      console.error('Database connection error:', dbError)
+      return NextResponse.json(
+        { message: 'Ошибка подключения к базе данных. Проверьте настройки DATABASE_URL.' },
+        { status: 500 }
+      )
+    }
+
     // Проверяем, существует ли пользователь
     const existingUser = await prisma.user.findUnique({
       where: { email: data.email },
@@ -52,7 +63,7 @@ export async function POST(request: NextRequest) {
       { message: 'Регистрация успешна', userId: user.id },
       { status: 201 }
     )
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { message: 'Неверные данные', errors: error.errors },
@@ -60,9 +71,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Проверка ошибок подключения к базе данных
+    if (error?.code === 'P1001' || error?.message?.includes('Can\'t reach database')) {
+      console.error('Database connection error:', error)
+      return NextResponse.json(
+        { message: 'Ошибка подключения к базе данных. Проверьте настройки DATABASE_URL.' },
+        { status: 500 }
+      )
+    }
+
+    // Проверка ошибок Prisma
+    if (error?.code === 'P2002') {
+      return NextResponse.json(
+        { message: 'Пользователь с таким email уже существует' },
+        { status: 400 }
+      )
+    }
+
     console.error('Registration error:', error)
     return NextResponse.json(
-      { message: 'Ошибка регистрации' },
+      { 
+        message: 'Ошибка регистрации',
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      },
       { status: 500 }
     )
   }

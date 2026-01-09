@@ -10,7 +10,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// SQLite не поддерживает enums, используем String
+// PostgreSQL поддерживает все функции
 
 model User {
   id                String    @id @default(cuid())
