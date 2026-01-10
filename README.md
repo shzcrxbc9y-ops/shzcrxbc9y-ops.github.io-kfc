@@ -37,6 +37,8 @@ npx prisma db seed
 ```
 DATABASE_URL="file:./prisma/dev.db"
 JWT_SECRET="your-secret-key-here"
+UPLOADTHING_SECRET="your-uploadthing-secret"
+UPLOADTHING_APP_ID="your-uploadthing-app-id"
 ```
 
 4. Запустите сервер разработки:
@@ -59,3 +61,5 @@ npm run dev
 Проект готов к деплою на Vercel. Настройте переменные окружения в панели Vercel:
 - `DATABASE_URL` - URL базы данных PostgreSQL
 - `JWT_SECRET` - Секретный ключ для JWT токенов
+- `UPLOADTHING_SECRET` - Секретный ключ UploadThing (для загрузки файлов)
+- `UPLOADTHING_APP_ID` - ID приложения UploadThing

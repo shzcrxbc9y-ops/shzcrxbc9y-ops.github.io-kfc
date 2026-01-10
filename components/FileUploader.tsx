@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { UploadButton } from '@/lib/uploadthing'
-import { X, FileText, Video, Image, Music, File, Upload, CloudUpload } from 'lucide-react'
+import { X, FileText, Video, Image, Music, File } from 'lucide-react'
 
 export interface UploadedFile {
   url: string
@@ -87,103 +87,31 @@ export default function FileUploader({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
-  const getFileTypeInfo = () => {
-    switch (fileType) {
-      case 'image':
-        return {
-          title: 'Загрузить изображения',
-          description: 'Выберите одно или несколько изображений',
-          icon: Image,
-          iconBg: 'bg-blue-100',
-          iconColor: 'text-blue-600',
-          maxSize: '4MB'
-        }
-      case 'video':
-        return {
-          title: 'Загрузить видео',
-          description: 'Выберите одно или несколько видео файлов',
-          icon: Video,
-          iconBg: 'bg-red-100',
-          iconColor: 'text-red-600',
-          maxSize: '64MB'
-        }
-      case 'audio':
-        return {
-          title: 'Загрузить аудио',
-          description: 'Выберите один или несколько аудио файлов',
-          icon: Music,
-          iconBg: 'bg-purple-100',
-          iconColor: 'text-purple-600',
-          maxSize: '32MB'
-        }
-      case 'file':
-        return {
-          title: 'Загрузить файлы',
-          description: 'Выберите один или несколько файлов',
-          icon: File,
-          iconBg: 'bg-green-100',
-          iconColor: 'text-green-600',
-          maxSize: '16MB'
-        }
-      default:
-        return {
-          title: 'Загрузить файлы',
-          description: 'Выберите файлы для загрузки',
-          icon: FileText,
-          iconBg: 'bg-gray-100',
-          iconColor: 'text-gray-600',
-          maxSize: '16MB'
-        }
-    }
-  }
-
-  const fileInfo = getFileTypeInfo()
-  const IconComponent = fileInfo.icon
-
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3 mb-4">
-        <div className={`p-2 rounded-lg ${fileInfo.iconBg} ${fileInfo.iconColor}`}>
-          <IconComponent className="w-5 h-5" />
-        </div>
-        <div>
-          <h3 className="font-semibold text-gray-800">{fileInfo.title}</h3>
-          <p className="text-xs text-gray-500">Максимальный размер: {fileInfo.maxSize}</p>
-        </div>
+      <div className="flex items-center gap-2 mb-3">
+        {getIcon()}
+        <span className="font-semibold text-gray-800">
+          {fileType === 'image' && 'Загрузить изображения'}
+          {fileType === 'video' && 'Загрузить видео'}
+          {fileType === 'audio' && 'Загрузить аудио'}
+          {fileType === 'file' && 'Загрузить файлы'}
+        </span>
       </div>
 
-      <div className="relative group">
-        <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 bg-gradient-to-br from-gray-50 via-white to-gray-50 hover:border-blue-400 hover:bg-gradient-to-br hover:from-blue-50/50 hover:via-white hover:to-blue-50/30 transition-all duration-300 shadow-sm hover:shadow-lg">
-          <div className="flex flex-col items-center justify-center text-center space-y-5">
-            <div className="relative">
-              <div className="p-5 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 group-hover:from-blue-200 group-hover:to-blue-300 transition-all duration-300 shadow-md group-hover:shadow-lg group-hover:scale-105">
-                <CloudUpload className="w-10 h-10 text-blue-600" />
-              </div>
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
-            </div>
-            <div className="space-y-3 w-full max-w-md">
-              <div className="flex justify-center">
-                <div className="relative">
-                  <UploadButton
-                    endpoint={getUploadEndpoint()}
-                    onClientUploadComplete={handleUploadComplete}
-                    onUploadError={handleUploadError}
-                    className="ut-button:bg-gradient-to-r ut-button:from-blue-600 ut-button:to-blue-700 ut-button:hover:from-blue-700 ut-button:hover:to-blue-800 ut-button:active:scale-95 ut-button:rounded-xl ut-button:px-10 ut-button:py-4 ut-button:text-white ut-button:font-bold ut-button:text-base ut-button:shadow-xl ut-button:hover:shadow-2xl ut-button:transition-all ut-button:duration-200 ut-button:border-0 ut-button:outline-none ut-button:focus:ring-4 ut-button:focus:ring-blue-300 ut-allowed-content:hidden ut-readying:opacity-70 ut-readying:cursor-wait"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2 pt-2">
-                <p className="text-base text-gray-700 font-semibold">
-                  {fileInfo.description}
-                </p>
-                <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
-                  <Upload className="w-3 h-3" />
-                  <span>Перетащите файлы сюда или нажмите кнопку выше</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 hover:border-blue-400 transition-colors">
+        <UploadButton
+          endpoint={getUploadEndpoint()}
+          onClientUploadComplete={handleUploadComplete}
+          onUploadError={handleUploadError}
+          className="ut-button:bg-blue-600 ut-button:hover:bg-blue-700 ut-button:rounded-lg ut-button:px-6 ut-button:py-3 ut-button:text-white ut-button:font-medium ut-allowed-content:text-gray-500"
+        />
+        <p className="text-sm text-gray-500 mt-3 text-center">
+          {fileType === 'image' && 'Выберите одно или несколько изображений'}
+          {fileType === 'video' && 'Выберите одно или несколько видео файлов'}
+          {fileType === 'audio' && 'Выберите один или несколько аудио файлов'}
+          {fileType === 'file' && 'Выберите один или несколько файлов'}
+        </p>
       </div>
 
       {uploadedFiles.length > 0 && (

@@ -77,30 +77,3 @@ body {
     @apply w-full h-auto max-h-[400px] object-contain rounded-lg;
   }
 }
-
-/* Стили для кнопки UploadThing */
-@layer components {
-  /* Улучшенная кнопка загрузки */
-  [data-ut-element="button"] {
-    @apply relative overflow-hidden;
-  }
-  
-  [data-ut-element="button"]::before {
-    content: '';
-    @apply absolute inset-0 bg-white opacity-0 transition-opacity duration-200;
-  }
-  
-  [data-ut-element="button"]:hover::before {
-    @apply opacity-10;
-  }
-  
-  /* Анимация для состояния загрузки */
-  [data-ut-element="button"][data-state="readying"] {
-    @apply cursor-wait;
-  }
-  
-  /* Скрытие текста "allowed content" */
-  [data-ut-element="allowed-content"] {
-    @apply hidden;
-  }
-}
