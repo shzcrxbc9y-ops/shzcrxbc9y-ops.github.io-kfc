@@ -24,10 +24,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Создаем администратора
+    // Создаем администратора (используем upsert для избежания ошибок)
     const adminPassword = await bcrypt.hash('admin123', 10)
-    const admin = await prisma.user.create({
-      data: {
+    const admin = await prisma.user.upsert({
+      where: { email: 'admin@kfc.com' },
+      update: {
+        // Обновляем пароль на случай, если нужно сбросить
+        password: adminPassword,
+        role: 'ADMIN',
+      },
+      create: {
         email: 'admin@kfc.com',
         password: adminPassword,
         firstName: 'Администратор',
