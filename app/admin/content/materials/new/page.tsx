@@ -300,32 +300,19 @@ function NewMaterialPageContent() {
           payload.fileSize = firstFile.fileSize
         }
 
-        // Сохраняем все файлы в content как JSON для удобного доступа
-        // Это позволяет отображать все файлы, включая первый
-        if (uploadedFiles.length > 0) {
-          const allFiles = uploadedFiles.map(f => ({
-            url: f.url,
-            fileName: f.fileName,
-            fileSize: f.fileSize,
-            type: f.fileType,
-          }))
-          
-          // Если файлов несколько, сохраняем все в additionalFiles
-          // Первый файл также сохраняется в основных полях для обратной совместимости
-          if (uploadedFiles.length > 1) {
-            payload.content = JSON.stringify({
-              text: formData.content,
-              additionalFiles: allFiles.slice(1), // Все кроме первого
-              allFiles: allFiles, // Все файлы для удобства
-            })
-          } else if (formData.content) {
-            // Если только один файл, но есть текст, сохраняем его
-            payload.content = formData.content
-          }
+        // Если файлов несколько, сохраняем их в content как JSON
+        if (uploadedFiles.length > 1) {
+          const additionalFiles = uploadedFiles.slice(1)
+          payload.content = JSON.stringify({
+            text: formData.content,
+            additionalFiles: additionalFiles.map(f => ({
+              url: f.url,
+              fileName: f.fileName,
+              fileSize: f.fileSize,
+              type: f.fileType,
+            })),
+          })
         }
-      } else if (formData.content) {
-        // Если нет файлов, но есть контент
-        payload.content = formData.content
       }
 
       const res = await fetch('/api/materials', {

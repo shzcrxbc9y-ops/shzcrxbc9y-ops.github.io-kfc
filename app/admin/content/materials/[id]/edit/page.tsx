@@ -100,26 +100,8 @@ export default function EditMaterialPage({ params }: { params: { id: string } })
           // Парсим дополнительные файлы из content, если есть
           try {
             const contentData = JSON.parse(material.content || '{}')
-            // Сначала проверяем allFiles (если есть), затем additionalFiles
-            if (contentData.allFiles && Array.isArray(contentData.allFiles)) {
-              // Используем allFiles, если доступен
-              const allFiles = contentData.allFiles.map((f: any) => ({
-                url: f.url,
-                fileName: f.fileName || 'file',
-                fileSize: f.fileSize || 0,
-                fileType: f.type || material.type,
-              }))
-              setUploadedFiles(allFiles)
-              return // Выходим, так как уже загрузили все файлы
-            } else if (contentData.additionalFiles && Array.isArray(contentData.additionalFiles)) {
-              // Иначе используем additionalFiles
-              const additionalFiles = contentData.additionalFiles.map((f: any) => ({
-                url: f.url,
-                fileName: f.fileName || 'file',
-                fileSize: f.fileSize || 0,
-                fileType: f.type || material.type,
-              }))
-              files.push(...additionalFiles)
+            if (contentData.additionalFiles) {
+              files.push(...contentData.additionalFiles)
             }
           } catch {}
 
@@ -320,30 +302,18 @@ export default function EditMaterialPage({ params }: { params: { id: string } })
           payload.fileSize = firstFile.fileSize
         }
 
-        // Сохраняем все файлы в content как JSON для удобного доступа
-        if (uploadedFiles.length > 0) {
-          const allFiles = uploadedFiles.map(f => ({
-            url: f.url,
-            fileName: f.fileName,
-            fileSize: f.fileSize,
-            type: f.fileType,
-          }))
-          
-          // Если файлов несколько, сохраняем все в additionalFiles
-          if (uploadedFiles.length > 1) {
-            payload.content = JSON.stringify({
-              text: formData.content,
-              additionalFiles: allFiles.slice(1), // Все кроме первого
-              allFiles: allFiles, // Все файлы для удобства
-            })
-          } else if (formData.content) {
-            // Если только один файл, но есть текст, сохраняем его
-            payload.content = formData.content
-          }
+        if (uploadedFiles.length > 1) {
+          const additionalFiles = uploadedFiles.slice(1)
+          payload.content = JSON.stringify({
+            text: formData.content,
+            additionalFiles: additionalFiles.map(f => ({
+              url: f.url,
+              fileName: f.fileName,
+              fileSize: f.fileSize,
+              type: f.fileType,
+            })),
+          })
         }
-      } else if (formData.content) {
-        // Если нет файлов, но есть контент
-        payload.content = formData.content
       }
 
       const res = await fetch(`/api/materials/${params.id}`, {

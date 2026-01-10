@@ -156,34 +156,26 @@ export default async function MaterialPage({ params }: { params: { id: string } 
             {(() => {
               try {
                 const contentData = JSON.parse(material.content || '{}')
-                let additionalVideos: any[] = []
-                
-                // Используем allFiles, если доступен
-                if (contentData.allFiles && Array.isArray(contentData.allFiles)) {
-                  additionalVideos = contentData.allFiles.filter((f: any) => 
-                    f.type?.includes('video') || material.type === 'video'
-                  ).slice(1) // Пропускаем первый (основной)
-                } else if (contentData.additionalFiles && Array.isArray(contentData.additionalFiles)) {
-                  additionalVideos = contentData.additionalFiles.filter((f: any) => f.type?.includes('video'))
-                }
-                
-                if (additionalVideos.length > 0) {
-                  return (
-                    <div className="grid md:grid-cols-2 gap-6 mt-6">
-                      {additionalVideos.map((file: any, index: number) => (
-                        <div key={index} className="w-full h-[600px] bg-gray-900 rounded-lg overflow-hidden shadow-lg flex items-center justify-center">
-                          <video
-                            src={file.url}
-                            controls
-                            className="w-full h-full object-contain"
-                            preload="metadata"
-                          >
-                            Ваш браузер не поддерживает видео.
-                          </video>
-                        </div>
-                      ))}
-                    </div>
-                  )
+                if (contentData.additionalFiles) {
+                  const additionalVideos = contentData.additionalFiles.filter((f: any) => f.type?.includes('video'))
+                  if (additionalVideos.length > 0) {
+                    return (
+                      <div className="grid md:grid-cols-2 gap-6 mt-6">
+                        {additionalVideos.map((file: any, index: number) => (
+                          <div key={index} className="w-full h-[600px] bg-gray-900 rounded-lg overflow-hidden shadow-lg flex items-center justify-center">
+                            <video
+                              src={file.url}
+                              controls
+                              className="w-full h-full object-contain"
+                              preload="metadata"
+                            >
+                              Ваш браузер не поддерживает видео.
+                            </video>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  }
                 }
               } catch {}
               return null
@@ -228,37 +220,29 @@ export default async function MaterialPage({ params }: { params: { id: string } 
             {(() => {
               try {
                 const contentData = JSON.parse(material.content || '{}')
-                let additionalAudio: any[] = []
-                
-                // Используем allFiles, если доступен
-                if (contentData.allFiles && Array.isArray(contentData.allFiles)) {
-                  additionalAudio = contentData.allFiles.filter((f: any) => 
-                    f.type?.includes('audio') || material.type === 'audio'
-                  ).slice(1) // Пропускаем первый (основной)
-                } else if (contentData.additionalFiles && Array.isArray(contentData.additionalFiles)) {
-                  additionalAudio = contentData.additionalFiles.filter((f: any) => f.type?.includes('audio'))
-                }
-                
-                if (additionalAudio.length > 0) {
-                  return (
-                    <div className="space-y-3">
-                      {additionalAudio.map((file: any, index: number) => (
-                        <div key={index} className="bg-gray-50 rounded-lg p-4">
-                          <audio
-                            src={file.url}
-                            controls
-                            className="w-full"
-                            preload="metadata"
-                          >
-                            Ваш браузер не поддерживает аудио.
-                          </audio>
-                          <p className="text-xs text-gray-600 mt-2">
-                            {file.fileName} {file.fileSize && `(${(file.fileSize / 1024 / 1024).toFixed(2)} MB)`}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  )
+                if (contentData.additionalFiles) {
+                  const additionalAudio = contentData.additionalFiles.filter((f: any) => f.type?.includes('audio'))
+                  if (additionalAudio.length > 0) {
+                    return (
+                      <div className="space-y-3">
+                        {additionalAudio.map((file: any, index: number) => (
+                          <div key={index} className="bg-gray-50 rounded-lg p-4">
+                            <audio
+                              src={file.url}
+                              controls
+                              className="w-full"
+                              preload="metadata"
+                            >
+                              Ваш браузер не поддерживает аудио.
+                            </audio>
+                            <p className="text-xs text-gray-600 mt-2">
+                              {file.fileName} {file.fileSize && `(${(file.fileSize / 1024 / 1024).toFixed(2)} MB)`}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  }
                 }
               } catch {}
               return null
@@ -284,31 +268,23 @@ export default async function MaterialPage({ params }: { params: { id: string } 
             {(() => {
               try {
                 const contentData = JSON.parse(material.content || '{}')
-                let additionalImages: any[] = []
-                
-                // Используем allFiles, если доступен
-                if (contentData.allFiles && Array.isArray(contentData.allFiles)) {
-                  additionalImages = contentData.allFiles.filter((f: any) => 
-                    f.type?.includes('image') || material.type === 'image'
-                  ).slice(1) // Пропускаем первый (основной)
-                } else if (contentData.additionalFiles && Array.isArray(contentData.additionalFiles)) {
-                  additionalImages = contentData.additionalFiles.filter((f: any) => f.type?.includes('image'))
-                }
-                
-                if (additionalImages.length > 0) {
-                  return (
-                    <div className="grid md:grid-cols-2 gap-6 mt-6">
-                      {additionalImages.map((file: any, index: number) => (
-                        <div key={index} className="w-full h-[600px] rounded-lg overflow-hidden shadow-lg">
-                          <img
-                            src={file.url}
-                            alt={`${material.title} - изображение ${index + 2}`}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )
+                if (contentData.additionalFiles) {
+                  const additionalImages = contentData.additionalFiles.filter((f: any) => f.type?.includes('image'))
+                  if (additionalImages.length > 0) {
+                    return (
+                      <div className="grid md:grid-cols-2 gap-6 mt-6">
+                        {additionalImages.map((file: any, index: number) => (
+                          <div key={index} className="w-full h-[600px] rounded-lg overflow-hidden shadow-lg">
+                            <img
+                              src={file.url}
+                              alt={`${material.title} - изображение ${index + 2}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  }
                 }
               } catch {}
               return null
@@ -317,149 +293,53 @@ export default async function MaterialPage({ params }: { params: { id: string } 
         )}
 
         {/* PDF или файл */}
-        {(() => {
-          // Получаем все файлы (основной + дополнительные)
-          let allFiles: Array<{ url: string; fileName: string; fileSize?: number; type?: string }> = []
-          
-          // Пытаемся получить все файлы из content (если есть allFiles)
-          try {
-            const contentData = JSON.parse(material.content || '{}')
-            if (contentData.allFiles && Array.isArray(contentData.allFiles) && contentData.allFiles.length > 0) {
-              // Используем allFiles, если доступен
-              allFiles = contentData.allFiles.map((f: any) => ({
-                url: f.url,
-                fileName: f.fileName || 'Файл',
-                fileSize: f.fileSize,
-                type: f.type || material.type,
-              }))
-            } else {
-              // Иначе добавляем основной файл, если он есть
-              if (material.fileUrl) {
-                allFiles.push({
-                  url: material.fileUrl,
-                  fileName: material.fileName || 'Файл',
-                  fileSize: material.fileSize || undefined,
-                  type: material.type,
-                })
-              }
-              
-              // Добавляем дополнительные файлы из content
-              if (contentData.additionalFiles && Array.isArray(contentData.additionalFiles)) {
-                const additionalFiles = contentData.additionalFiles.map((f: any) => ({
-                  url: f.url,
-                  fileName: f.fileName || 'Файл',
-                  fileSize: f.fileSize,
-                  type: f.type || material.type,
-                }))
-                allFiles = [...allFiles, ...additionalFiles]
-              }
-            }
-          } catch {
-            // Если не JSON, просто используем основной файл, если он есть
-            if (material.fileUrl) {
-              allFiles.push({
-                url: material.fileUrl,
-                fileName: material.fileName || 'Файл',
-                fileSize: material.fileSize || undefined,
-                type: material.type,
-              })
-            }
-          }
-          
-          // Показываем только если есть файлы и тип материала - pdf или file
-          if (allFiles.length === 0 || (material.type !== 'pdf' && material.type !== 'file')) {
-            return null
-          }
-          
-          return (
-            <div className="mb-8 space-y-6">
-              {allFiles.map((file, index) => {
-                const isPdf = material.type === 'pdf' || file.type?.includes('pdf') || file.type?.includes('application/pdf')
-                const fileSizeMB = file.fileSize ? (file.fileSize / 1024 / 1024).toFixed(2) : null
-                
-                return (
-                  <div key={index} className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-lg mb-1">
-                            {isPdf ? 'PDF документ' : 'Файл'} {allFiles.length > 1 ? `(${index + 1} из ${allFiles.length})` : ''}
-                          </h3>
-                          <p className="text-sm text-gray-600">
-                            {file.fileName}
-                            {fileSizeMB && ` (${fileSizeMB} MB)`}
-                          </p>
-                        </div>
-                        {isPdf && (
-                          <a
-                            href={file.url}
-                            download={file.fileName}
-                            className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors font-medium"
-                            title="Скачать PDF"
-                          >
-                            <FileText className="w-4 h-4 inline mr-1" />
-                            Скачать
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                    {isPdf ? (
-                      <div className="w-full bg-gray-50 p-4">
-                        <div className="w-full bg-white rounded-lg shadow-sm overflow-hidden" style={{ height: '800px' }}>
-                          {/* Используем Google Docs Viewer для отображения PDF */}
-                          <iframe
-                            src={`https://docs.google.com/viewer?url=${encodeURIComponent(file.url)}&embedded=true`}
-                            className="w-full h-full border-0"
-                            title={file.fileName}
-                            style={{ minHeight: '800px' }}
-                            allow="fullscreen"
-                          >
-                            <div className="p-8 text-center h-full flex flex-col items-center justify-center">
-                              <p className="text-gray-600 mb-4">
-                                Ваш браузер не поддерживает встроенный просмотр PDF.
-                              </p>
-                              <div className="space-y-3">
-                                <a
-                                  href={file.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md font-medium"
-                                >
-                                  Открыть PDF в новом окне
-                                </a>
-                                <a
-                                  href={file.url}
-                                  download={file.fileName}
-                                  className="inline-block px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors shadow-sm hover:shadow-md font-medium ml-3"
-                                >
-                                  Скачать PDF
-                                </a>
-                              </div>
-                            </div>
-                          </iframe>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="p-6">
-                        <div className="text-center py-8 bg-gray-50 rounded border-2 border-dashed border-gray-300">
-                          <FileText className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-                          <p className="text-gray-600 mb-4">Файл готов к скачиванию</p>
-                          <a
-                            href={file.url}
-                            download={file.fileName}
-                            className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md font-medium"
-                          >
-                            Скачать файл
-                          </a>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
+        {(material.type === 'pdf' || material.type === 'file') && material.fileUrl && (
+          <div className="mb-6 bg-gray-50 rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="font-semibold text-lg mb-1">
+                  {material.type === 'pdf' ? 'PDF документ' : 'Файл'}
+                </h3>
+                {material.fileName && (
+                  <p className="text-sm text-gray-600">
+                    {material.fileName}
+                    {material.fileSize && ` (${(material.fileSize / 1024 / 1024).toFixed(2)} MB)`}
+                  </p>
+                )}
+              </div>
+              <a
+                href={material.fileUrl}
+                download
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md font-medium"
+              >
+                Скачать
+              </a>
             </div>
-          )
-        })()}
+            {material.type === 'pdf' ? (
+              <iframe
+                src={material.fileUrl}
+                className="w-full h-[600px] border rounded-lg"
+                title={material.title}
+              >
+                <p>
+                  Ваш браузер не поддерживает просмотр PDF.
+                  <a href={material.fileUrl} download>Скачайте файл</a> для просмотра.
+                </p>
+              </iframe>
+            ) : (
+              <div className="text-center py-8 bg-white rounded border-2 border-dashed border-gray-300">
+                <p className="text-gray-600 mb-4">Файл готов к скачиванию</p>
+                <a
+                  href={material.fileUrl}
+                  download
+                  className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md font-medium"
+                >
+                  Скачать файл
+                </a>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Текстовый контент */}
         {material.content && (() => {
