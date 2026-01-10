@@ -8,30 +8,23 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
-    // Проверяем, существует ли уже админ
-    const existingAdmin = await prisma.user.findFirst({
-      where: { role: 'ADMIN' },
-    })
-
-    if (existingAdmin) {
-      return NextResponse.json(
-        { 
-          message: 'Администратор уже существует',
-          email: existingAdmin.email,
-          hint: 'Используйте существующий email для входа'
-        },
-        { status: 400 }
-      )
-    }
-
-    // Создаем администратора (используем upsert для избежания ошибок)
+    // Создаем или обновляем администратора (используем upsert для избежания ошибок)
     const adminPassword = await bcrypt.hash('admin123', 10)
+    
+    // Проверяем, существует ли уже админ
+    const existingAdmin = await prisma.user.findUnique({
+      where: { email: 'admin@kfc.com' },
+    })
+    
     const admin = await prisma.user.upsert({
       where: { email: 'admin@kfc.com' },
       update: {
-        // Обновляем пароль на случай, если нужно сбросить
+        // Всегда обновляем пароль и роль
         password: adminPassword,
         role: 'ADMIN',
+        firstName: 'Администратор',
+        lastName: 'Системы',
+        position: 'Администратор',
       },
       create: {
         email: 'admin@kfc.com',
@@ -46,14 +39,25 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    // Создаем прогресс, если его нет
+    if (!existingAdmin || !existingAdmin.id) {
+      await prisma.progress.upsert({
+        where: { userId: admin.id },
+        update: {},
+        create: {
+          userId: admin.id,
+        },
+      })
+    }
+
     return NextResponse.json(
       { 
-        message: 'Администратор успешно создан',
+        message: existingAdmin ? 'Пароль администратора успешно обновлен' : 'Администратор успешно создан',
         email: admin.email,
         password: 'admin123',
         hint: 'Используйте эти данные для входа'
       },
-      { status: 201 }
+      { status: existingAdmin ? 200 : 201 }
     )
   } catch (error: any) {
     console.error('Error creating admin:', error)
