@@ -406,8 +406,9 @@ export default async function MaterialPage({ params }: { params: { id: string } 
                     {isPdf ? (
                       <div className="w-full bg-gray-50 p-4">
                         <div className="w-full bg-white rounded-lg shadow-sm overflow-hidden" style={{ height: '800px' }}>
+                          {/* Используем Google Docs Viewer для отображения PDF */}
                           <iframe
-                            src={`${file.url}#toolbar=1&navpanes=1&scrollbar=1`}
+                            src={`https://docs.google.com/viewer?url=${encodeURIComponent(file.url)}&embedded=true`}
                             className="w-full h-full border-0"
                             title={file.fileName}
                             style={{ minHeight: '800px' }}
@@ -417,14 +418,23 @@ export default async function MaterialPage({ params }: { params: { id: string } 
                               <p className="text-gray-600 mb-4">
                                 Ваш браузер не поддерживает встроенный просмотр PDF.
                               </p>
-                              <a
-                                href={file.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md font-medium"
-                              >
-                                Открыть PDF в новом окне
-                              </a>
+                              <div className="space-y-3">
+                                <a
+                                  href={file.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md font-medium"
+                                >
+                                  Открыть PDF в новом окне
+                                </a>
+                                <a
+                                  href={file.url}
+                                  download={file.fileName}
+                                  className="inline-block px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors shadow-sm hover:shadow-md font-medium ml-3"
+                                >
+                                  Скачать PDF
+                                </a>
+                              </div>
                             </div>
                           </iframe>
                         </div>
