@@ -78,7 +78,7 @@ export default async function MaterialPage({ params }: { params: { id: string } 
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto px-3 md:px-4 py-4 md:py-8 max-w-6xl">
         {/* Хлебные крошки */}
         <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
           <Link href="/learning" className="hover:text-gray-900 transition-colors">
@@ -134,17 +134,17 @@ export default async function MaterialPage({ params }: { params: { id: string } 
             </div>
           </div>
 
-          <div className="p-6 md:p-8">
+          <div className="p-4 md:p-6 lg:p-8">
 
         {/* Видео */}
         {material.type === 'video' && material.videoUrl && (
           <div className="mb-8">
             <div className="w-full max-w-5xl mx-auto">
-              <div className="w-full h-[600px] bg-gray-900 rounded-xl overflow-hidden shadow-lg mb-4 flex items-center justify-center">
+              <div className="w-full aspect-video bg-gray-900 rounded-xl overflow-hidden shadow-lg mb-4 flex items-center justify-center">
                 <video
                   src={material.videoUrl}
                   controls
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover"
                   preload="metadata"
                 >
                   Ваш браузер не поддерживает видео.
@@ -162,11 +162,11 @@ export default async function MaterialPage({ params }: { params: { id: string } 
                     return (
                       <div className="grid md:grid-cols-2 gap-6 mt-6">
                         {additionalVideos.map((file: any, index: number) => (
-                          <div key={index} className="w-full h-[600px] bg-gray-900 rounded-lg overflow-hidden shadow-lg flex items-center justify-center">
+                          <div key={index} className="w-full aspect-video bg-gray-900 rounded-lg overflow-hidden shadow-lg flex items-center justify-center">
                             <video
                               src={file.url}
                               controls
-                              className="w-full h-full object-contain"
+                              className="w-full h-full object-cover"
                               preload="metadata"
                             >
                               Ваш браузер не поддерживает видео.
@@ -255,7 +255,7 @@ export default async function MaterialPage({ params }: { params: { id: string } 
           <div className="mb-8">
             <div className="mb-6">
               <div className="w-full">
-                <div className="w-full h-[600px] rounded-lg overflow-hidden shadow-lg">
+                <div className="w-full aspect-square md:aspect-video rounded-lg overflow-hidden shadow-lg">
                   <img
                     src={material.imageUrl}
                     alt={material.title}
@@ -274,7 +274,7 @@ export default async function MaterialPage({ params }: { params: { id: string } 
                     return (
                       <div className="grid md:grid-cols-2 gap-6 mt-6">
                         {additionalImages.map((file: any, index: number) => (
-                          <div key={index} className="w-full h-[600px] rounded-lg overflow-hidden shadow-lg">
+                          <div key={index} className="w-full aspect-square md:aspect-video rounded-lg overflow-hidden shadow-lg">
                             <img
                               src={file.url}
                               alt={`${material.title} - изображение ${index + 2}`}
@@ -294,14 +294,14 @@ export default async function MaterialPage({ params }: { params: { id: string } 
 
         {/* PDF или файл */}
         {(material.type === 'pdf' || material.type === 'file') && material.fileUrl && (
-          <div className="mb-6 bg-gray-50 rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
+          <div className="mb-6 bg-gray-50 rounded-lg p-4 md:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
               <div>
-                <h3 className="font-semibold text-lg mb-1">
+                <h3 className="font-semibold text-base md:text-lg mb-1">
                   {material.type === 'pdf' ? 'PDF документ' : 'Файл'}
                 </h3>
                 {material.fileName && (
-                  <p className="text-sm text-gray-600">
+                  <p className="text-xs md:text-sm text-gray-600 break-words">
                     {material.fileName}
                     {material.fileSize && ` (${(material.fileSize / 1024 / 1024).toFixed(2)} MB)`}
                   </p>
@@ -310,29 +310,31 @@ export default async function MaterialPage({ params }: { params: { id: string } 
               <a
                 href={material.fileUrl}
                 download
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md font-medium"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md font-medium text-sm md:text-base whitespace-nowrap"
               >
                 Скачать
               </a>
             </div>
             {material.type === 'pdf' ? (
-              <iframe
-                src={material.fileUrl}
-                className="w-full h-[600px] border rounded-lg"
-                title={material.title}
-              >
-                <p>
-                  Ваш браузер не поддерживает просмотр PDF.
-                  <a href={material.fileUrl} download>Скачайте файл</a> для просмотра.
-                </p>
-              </iframe>
+              <div className="w-full aspect-square md:aspect-[4/3] border rounded-lg overflow-hidden bg-white">
+                <iframe
+                  src={material.fileUrl}
+                  className="w-full h-full border-0"
+                  title={material.title}
+                >
+                  <p>
+                    Ваш браузер не поддерживает просмотр PDF.
+                    <a href={material.fileUrl} download>Скачайте файл</a> для просмотра.
+                  </p>
+                </iframe>
+              </div>
             ) : (
-              <div className="text-center py-8 bg-white rounded border-2 border-dashed border-gray-300">
-                <p className="text-gray-600 mb-4">Файл готов к скачиванию</p>
+              <div className="text-center py-6 md:py-8 bg-white rounded border-2 border-dashed border-gray-300">
+                <p className="text-gray-600 mb-4 text-sm md:text-base">Файл готов к скачиванию</p>
                 <a
                   href={material.fileUrl}
                   download
-                  className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md font-medium"
+                  className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md font-medium text-sm md:text-base"
                 >
                   Скачать файл
                 </a>
