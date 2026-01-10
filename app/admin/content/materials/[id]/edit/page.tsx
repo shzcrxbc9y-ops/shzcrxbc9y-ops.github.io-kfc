@@ -147,12 +147,12 @@ export default function EditMaterialPage({ params }: { params: { id: string } })
         setUploadProgress(prev => ({ ...prev, [fileName]: 0 }))
 
         const formData = new FormData()
-        formData.append('files', file)
+        formData.append('file', file)
         formData.append('fileType', fileType)
 
         const xhr = new XMLHttpRequest()
 
-        const uploadPromise = new Promise<UploadedFile[]>((resolve, reject) => {
+        const uploadPromise = new Promise<UploadedFile>((resolve, reject) => {
           xhr.upload.addEventListener('progress', (e) => {
             if (e.lengthComputable) {
               const percentComplete = (e.loaded / e.total) * 100
@@ -164,8 +164,13 @@ export default function EditMaterialPage({ params }: { params: { id: string } })
             if (xhr.status === 200) {
               try {
                 const data = JSON.parse(xhr.responseText)
-                if (data.files && data.files.length > 0) {
-                  resolve(data.files)
+                if (data.url) {
+                  resolve({
+                    url: data.url,
+                    fileName: data.fileName,
+                    fileSize: data.fileSize,
+                    fileType: data.fileType,
+                  })
                 } else {
                   reject(new Error('Файл не был загружен'))
                 }
@@ -190,12 +195,12 @@ export default function EditMaterialPage({ params }: { params: { id: string } })
             reject(new Error('Загрузка файла была прервана'))
           })
 
-          xhr.open('POST', '/api/materials/upload-multiple')
+          xhr.open('POST', '/api/materials/upload')
           xhr.send(formData)
         })
 
         const uploaded = await uploadPromise
-        successfullyUploaded.push(...uploaded)
+        successfullyUploaded.push(uploaded)
         setUploadProgress(prev => {
           const newProgress = { ...prev }
           delete newProgress[fileName]

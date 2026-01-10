@@ -109,7 +109,7 @@ function NewMaterialPageContent() {
     const successfullyUploaded: UploadedFile[] = []
     const errors: string[] = []
 
-    // Загружаем файлы по одному для лучшей обработки ошибок
+    // Загружаем файлы по одному через существующий endpoint
     for (let i = 0; i < fileArray.length; i++) {
       const file = fileArray[i]
       const fileName = file.name
@@ -118,13 +118,13 @@ function NewMaterialPageContent() {
         setUploadProgress(prev => ({ ...prev, [fileName]: 0 }))
 
         const formData = new FormData()
-        formData.append('files', file)
+        formData.append('file', file)
         formData.append('fileType', fileType)
 
         // Используем fetch с отслеживанием прогресса
         const xhr = new XMLHttpRequest()
 
-        const uploadPromise = new Promise<UploadedFile[]>((resolve, reject) => {
+        const uploadPromise = new Promise<UploadedFile>((resolve, reject) => {
           xhr.upload.addEventListener('progress', (e) => {
             if (e.lengthComputable) {
               const percentComplete = (e.loaded / e.total) * 100
@@ -136,8 +136,13 @@ function NewMaterialPageContent() {
             if (xhr.status === 200) {
               try {
                 const data = JSON.parse(xhr.responseText)
-                if (data.files && data.files.length > 0) {
-                  resolve(data.files)
+                if (data.url) {
+                  resolve({
+                    url: data.url,
+                    fileName: data.fileName,
+                    fileSize: data.fileSize,
+                    fileType: data.fileType,
+                  })
                 } else {
                   reject(new Error('Файл не был загружен'))
                 }
@@ -162,12 +167,12 @@ function NewMaterialPageContent() {
             reject(new Error('Загрузка файла была прервана'))
           })
 
-          xhr.open('POST', '/api/materials/upload-multiple')
+          xhr.open('POST', '/api/materials/upload')
           xhr.send(formData)
         })
 
         const uploaded = await uploadPromise
-        successfullyUploaded.push(...uploaded)
+        successfullyUploaded.push(uploaded)
         setUploadProgress(prev => {
           const newProgress = { ...prev }
           delete newProgress[fileName]
