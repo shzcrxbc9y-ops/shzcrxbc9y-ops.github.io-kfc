@@ -37,6 +37,7 @@ export default function EditMaterialPage({ params }: { params: { id: string } })
     title: '',
     content: '',
     type: 'text' as 'text' | 'video' | 'audio' | 'image' | 'pdf' | 'file',
+    order: 0,
   })
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
   const [uploading, setUploading] = useState(false)
@@ -59,6 +60,7 @@ export default function EditMaterialPage({ params }: { params: { id: string } })
             title: material.title,
             content: material.content || '',
             type: material.type,
+            order: material.order,
           })
           setSelectedSection(material.sectionId)
           setSelectedStation(material.section?.stationId || '')
@@ -98,8 +100,26 @@ export default function EditMaterialPage({ params }: { params: { id: string } })
           // Парсим дополнительные файлы из content, если есть
           try {
             const contentData = JSON.parse(material.content || '{}')
-            if (contentData.additionalFiles) {
-              files.push(...contentData.additionalFiles)
+            // Сначала проверяем allFiles (если есть), затем additionalFiles
+            if (contentData.allFiles && Array.isArray(contentData.allFiles)) {
+              // Используем allFiles, если доступен
+              const allFiles = contentData.allFiles.map((f: any) => ({
+                url: f.url,
+                fileName: f.fileName || 'file',
+                fileSize: f.fileSize || 0,
+                fileType: f.type || material.type,
+              }))
+              setUploadedFiles(allFiles)
+              return // Выходим, так как уже загрузили все файлы
+            } else if (contentData.additionalFiles && Array.isArray(contentData.additionalFiles)) {
+              // Иначе используем additionalFiles
+              const additionalFiles = contentData.additionalFiles.map((f: any) => ({
+                url: f.url,
+                fileName: f.fileName || 'file',
+                fileSize: f.fileSize || 0,
+                fileType: f.type || material.type,
+              }))
+              files.push(...additionalFiles)
             }
           } catch {}
 
@@ -282,7 +302,7 @@ export default function EditMaterialPage({ params }: { params: { id: string } })
         title: formData.title,
         content: formData.content,
         type: formData.type,
-        order: 0,
+        order: formData.order,
         sectionId: selectedSection,
       }
 
@@ -300,18 +320,30 @@ export default function EditMaterialPage({ params }: { params: { id: string } })
           payload.fileSize = firstFile.fileSize
         }
 
-        if (uploadedFiles.length > 1) {
-          const additionalFiles = uploadedFiles.slice(1)
-          payload.content = JSON.stringify({
-            text: formData.content,
-            additionalFiles: additionalFiles.map(f => ({
-              url: f.url,
-              fileName: f.fileName,
-              fileSize: f.fileSize,
-              type: f.fileType,
-            })),
-          })
+        // Сохраняем все файлы в content как JSON для удобного доступа
+        if (uploadedFiles.length > 0) {
+          const allFiles = uploadedFiles.map(f => ({
+            url: f.url,
+            fileName: f.fileName,
+            fileSize: f.fileSize,
+            type: f.fileType,
+          }))
+          
+          // Если файлов несколько, сохраняем все в additionalFiles
+          if (uploadedFiles.length > 1) {
+            payload.content = JSON.stringify({
+              text: formData.content,
+              additionalFiles: allFiles.slice(1), // Все кроме первого
+              allFiles: allFiles, // Все файлы для удобства
+            })
+          } else if (formData.content) {
+            // Если только один файл, но есть текст, сохраняем его
+            payload.content = formData.content
+          }
         }
+      } else if (formData.content) {
+        // Если нет файлов, но есть контент
+        payload.content = formData.content
       }
 
       const res = await fetch(`/api/materials/${params.id}`, {
@@ -507,6 +539,19 @@ export default function EditMaterialPage({ params }: { params: { id: string } })
               <p className="text-xs text-gray-500 mt-1">
                 Используйте панель инструментов для форматирования текста: изменение размера, цвета, жирный, курсив и т.д.
               </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Порядок отображения
+              </label>
+              <input
+                type="number"
+                value={formData.order}
+                onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                min="0"
+              />
             </div>
 
             <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200">

@@ -37,6 +37,7 @@ function NewMaterialPageContent() {
     title: '',
     content: '',
     type: 'text' as 'text' | 'video' | 'audio' | 'image' | 'pdf' | 'file',
+    order: 0,
   })
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
   const [uploading, setUploading] = useState(false)
@@ -281,7 +282,7 @@ function NewMaterialPageContent() {
         title: formData.title,
         content: formData.content,
         type: formData.type,
-        order: 0,
+        order: formData.order,
       }
 
       // Если есть загруженные файлы
@@ -299,19 +300,32 @@ function NewMaterialPageContent() {
           payload.fileSize = firstFile.fileSize
         }
 
-        // Если файлов несколько, сохраняем их в content как JSON
-        if (uploadedFiles.length > 1) {
-          const additionalFiles = uploadedFiles.slice(1)
-          payload.content = JSON.stringify({
-            text: formData.content,
-            additionalFiles: additionalFiles.map(f => ({
-              url: f.url,
-              fileName: f.fileName,
-              fileSize: f.fileSize,
-              type: f.fileType,
-            })),
-          })
+        // Сохраняем все файлы в content как JSON для удобного доступа
+        // Это позволяет отображать все файлы, включая первый
+        if (uploadedFiles.length > 0) {
+          const allFiles = uploadedFiles.map(f => ({
+            url: f.url,
+            fileName: f.fileName,
+            fileSize: f.fileSize,
+            type: f.fileType,
+          }))
+          
+          // Если файлов несколько, сохраняем все в additionalFiles
+          // Первый файл также сохраняется в основных полях для обратной совместимости
+          if (uploadedFiles.length > 1) {
+            payload.content = JSON.stringify({
+              text: formData.content,
+              additionalFiles: allFiles.slice(1), // Все кроме первого
+              allFiles: allFiles, // Все файлы для удобства
+            })
+          } else if (formData.content) {
+            // Если только один файл, но есть текст, сохраняем его
+            payload.content = formData.content
+          }
         }
+      } else if (formData.content) {
+        // Если нет файлов, но есть контент
+        payload.content = formData.content
       }
 
       const res = await fetch('/api/materials', {
@@ -507,6 +521,20 @@ function NewMaterialPageContent() {
               <p className="text-xs text-gray-500 mt-1">
                 Используйте панель инструментов для форматирования текста: изменение размера, цвета, жирный, курсив и т.д.
               </p>
+            </div>
+
+            {/* Порядок */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Порядок отображения
+              </label>
+              <input
+                type="number"
+                value={formData.order}
+                onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                min="0"
+              />
             </div>
 
             {/* Кнопки */}
