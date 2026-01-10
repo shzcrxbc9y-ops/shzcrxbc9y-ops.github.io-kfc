@@ -1,9 +1,9 @@
 import { createUploadthing, type FileRouter } from 'uploadthing/next'
 
 // UploadThing автоматически использует переменные окружения:
-// - UPLOADTHING_TOKEN (base64-encoded JSON с apiKey, appId, regions)
-// - или UPLOADTHING_SECRET и UPLOADTHING_APP_ID
-// Токен не нужно передавать напрямую в createUploadthing
+// - UPLOADTHING_TOKEN (base64-encoded JSON)
+// - или UPLOADTHING_SECRET + UPLOADTHING_APP_ID
+// createUploadthing вызывается без параметров
 const f = createUploadthing()
 
 export const ourFileRouter = {
