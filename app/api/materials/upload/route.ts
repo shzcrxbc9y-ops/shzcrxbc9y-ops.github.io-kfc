@@ -92,52 +92,92 @@ export async function POST(request: NextRequest) {
     // Получаем расширение файла (регистронезависимо)
     const extension = fileNameLower.split('.').pop() || ''
     
-    // Проверяем по MIME типу
-    let isAllowedMimeType = false
-    if (fileTypeLower) {
-      isAllowedMimeType = allowedTypes.some(type => {
-        const typeParts = type.toLowerCase().split('/')
-        return fileTypeLower.includes(typeParts[0]) && fileTypeLower.includes(typeParts[1])
-      })
-    }
-    
-    // Проверяем по расширению файла (для мобильных устройств, которые могут не передавать правильный MIME тип)
-    let isAllowedExtension = false
+    // Определяем разрешенные расширения для каждого типа
     const allowedExtensions: string[] = []
     
     if (fileType === 'video') {
-      allowedExtensions.push('mp4', 'webm', 'ogg', 'mov', 'avi', '3gp', '3g2', 'mkv')
+      allowedExtensions.push('mp4', 'webm', 'ogg', 'mov', 'avi', '3gp', '3g2', 'mkv', 'm4v', 'flv', 'wmv', 'mpg', 'mpeg')
     } else if (fileType === 'audio') {
-      allowedExtensions.push('mp3', 'wav', 'ogg', 'aac', 'm4a', 'webm')
+      allowedExtensions.push('mp3', 'wav', 'ogg', 'aac', 'm4a', 'webm', 'flac', 'wma', 'opus', 'amr')
     } else if (fileType === 'image') {
-      allowedExtensions.push('jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif', 'ico', 'bmp')
-    } else if (fileType === 'pdf' || fileType === 'file') {
-      allowedExtensions.push('pdf', 'doc', 'docx', 'xls', 'xlsx')
+      allowedExtensions.push('jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif', 'ico', 'bmp', 'svg', 'tiff', 'tif', 'jfif')
+    } else if (fileType === 'pdf') {
+      allowedExtensions.push('pdf')
+    } else if (fileType === 'file') {
+      // Для типа "file" принимаем все документы
+      allowedExtensions.push('pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'rtf', 'odt', 'ods', 'odp', 'csv')
     }
     
-    isAllowedExtension = allowedExtensions.includes(extension)
+    // Проверяем по расширению файла (основная проверка)
+    let isAllowedExtension = allowedExtensions.includes(extension)
     
-    // Если ни MIME тип, ни расширение не подходят, возвращаем ошибку с деталями
-    if (!isAllowedMimeType && !isAllowedExtension) {
-      console.error('File validation failed:', {
-        fileName: file.name,
-        fileType: file.type,
-        extension: extension,
-        requestedType: fileType,
-        allowedMimeTypes: allowedTypes,
-        allowedExtensions: allowedExtensions
-      })
-      
-      return NextResponse.json(
-        { 
-          message: `Неподдерживаемый тип файла. Для типа "${fileType}" разрешены расширения: ${allowedExtensions.join(', ')}. Ваш файл: ${file.name} (тип: ${file.type || 'неизвестный'}, расширение: ${extension})`,
-          receivedType: file.type || 'неизвестный',
-          receivedExtension: extension,
+    // Проверяем по MIME типу (дополнительная проверка)
+    let isAllowedMimeType = false
+    if (fileTypeLower) {
+      // Более гибкая проверка MIME типа
+      if (fileType === 'image') {
+        isAllowedMimeType = fileTypeLower.startsWith('image/')
+      } else if (fileType === 'video') {
+        isAllowedMimeType = fileTypeLower.startsWith('video/')
+      } else if (fileType === 'audio') {
+        isAllowedMimeType = fileTypeLower.startsWith('audio/')
+      } else if (fileType === 'pdf') {
+        isAllowedMimeType = fileTypeLower === 'application/pdf' || fileTypeLower.includes('pdf')
+      } else if (fileType === 'file') {
+        // Для типа "file" принимаем любые документы
+        isAllowedMimeType = fileTypeLower.includes('pdf') || 
+                           fileTypeLower.includes('word') || 
+                           fileTypeLower.includes('excel') || 
+                           fileTypeLower.includes('spreadsheet') ||
+                           fileTypeLower.includes('powerpoint') ||
+                           fileTypeLower.includes('presentation') ||
+                           fileTypeLower.includes('text') ||
+                           fileTypeLower.includes('document') ||
+                           fileTypeLower.includes('msword') ||
+                           fileTypeLower.includes('officedocument') ||
+                           fileTypeLower.includes('csv') ||
+                           fileTypeLower.includes('rtf')
+      }
+    }
+    
+    // Если расширение отсутствует или файл не имеет расширения, но пользователь выбрал тип
+    // и MIME тип соответствует - принимаем файл
+    const hasNoExtension = !extension || extension === fileNameLower || extension.length > 10
+    
+    // Принимаем файл если:
+    // 1. Расширение соответствует выбранному типу
+    // 2. MIME тип соответствует выбранному типу
+    // 3. Расширение отсутствует, но MIME тип соответствует (доверяем выбору пользователя)
+    if (!isAllowedExtension && !isAllowedMimeType) {
+      // Если нет расширения, но пользователь выбрал тип - принимаем (доверяем выбору)
+      if (hasNoExtension) {
+        console.warn('File extension not found, but accepting based on user selection:', {
           fileName: file.name,
+          selectedType: fileType,
+          mimeType: file.type
+        })
+        // Принимаем файл, так как пользователь явно выбрал тип
+      } else {
+        // Расширение есть, но не соответствует выбранному типу
+        console.error('File validation failed:', {
+          fileName: file.name,
+          fileType: file.type,
+          extension: extension,
+          requestedType: fileType,
           allowedExtensions: allowedExtensions
-        },
-        { status: 400 }
-      )
+        })
+        
+        return NextResponse.json(
+          { 
+            message: `Неподдерживаемый тип файла. Для типа "${fileType}" разрешены расширения: ${allowedExtensions.join(', ')}. Ваш файл: ${file.name} (расширение: ${extension})`,
+            receivedType: file.type || 'неизвестный',
+            receivedExtension: extension,
+            fileName: file.name,
+            allowedExtensions: allowedExtensions
+          },
+          { status: 400 }
+        )
+      }
     }
 
     // Создаем директорию, если её нет
