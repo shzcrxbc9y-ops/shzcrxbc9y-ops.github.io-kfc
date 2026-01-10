@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { UploadButton } from '@/lib/uploadthing'
 import { X, FileText, Video, Image, Music, File } from 'lucide-react'
 
@@ -25,6 +25,11 @@ export default function FileUploader({
   onRemoveFile 
 }: FileUploaderProps) {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>(existingFiles)
+
+  // Синхронизируем existingFiles с uploadedFiles
+  useEffect(() => {
+    setUploadedFiles(existingFiles)
+  }, [existingFiles])
 
   const handleUploadComplete = (res: any) => {
     const newFiles: UploadedFile[] = res.map((file: any) => ({
