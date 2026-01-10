@@ -317,14 +317,14 @@ export default async function MaterialPage({ params }: { params: { id: string } 
         )}
 
         {/* PDF или файл */}
-        {(material.type === 'pdf' || material.type === 'file') && material.fileUrl && (() => {
+        {(() => {
           // Получаем все файлы (основной + дополнительные)
           let allFiles: Array<{ url: string; fileName: string; fileSize?: number; type?: string }> = []
           
           // Пытаемся получить все файлы из content (если есть allFiles)
           try {
             const contentData = JSON.parse(material.content || '{}')
-            if (contentData.allFiles && Array.isArray(contentData.allFiles)) {
+            if (contentData.allFiles && Array.isArray(contentData.allFiles) && contentData.allFiles.length > 0) {
               // Используем allFiles, если доступен
               allFiles = contentData.allFiles.map((f: any) => ({
                 url: f.url,
@@ -333,13 +333,15 @@ export default async function MaterialPage({ params }: { params: { id: string } 
                 type: f.type || material.type,
               }))
             } else {
-              // Иначе добавляем основной файл
-              allFiles.push({
-                url: material.fileUrl,
-                fileName: material.fileName || 'Файл',
-                fileSize: material.fileSize || undefined,
-                type: material.type,
-              })
+              // Иначе добавляем основной файл, если он есть
+              if (material.fileUrl) {
+                allFiles.push({
+                  url: material.fileUrl,
+                  fileName: material.fileName || 'Файл',
+                  fileSize: material.fileSize || undefined,
+                  type: material.type,
+                })
+              }
               
               // Добавляем дополнительные файлы из content
               if (contentData.additionalFiles && Array.isArray(contentData.additionalFiles)) {
@@ -353,13 +355,20 @@ export default async function MaterialPage({ params }: { params: { id: string } 
               }
             }
           } catch {
-            // Если не JSON, просто используем основной файл
-            allFiles.push({
-              url: material.fileUrl,
-              fileName: material.fileName || 'Файл',
-              fileSize: material.fileSize || undefined,
-              type: material.type,
-            })
+            // Если не JSON, просто используем основной файл, если он есть
+            if (material.fileUrl) {
+              allFiles.push({
+                url: material.fileUrl,
+                fileName: material.fileName || 'Файл',
+                fileSize: material.fileSize || undefined,
+                type: material.type,
+              })
+            }
+          }
+          
+          // Показываем только если есть файлы и тип материала - pdf или file
+          if (allFiles.length === 0 || (material.type !== 'pdf' && material.type !== 'file')) {
+            return null
           }
           
           return (
@@ -395,26 +404,30 @@ export default async function MaterialPage({ params }: { params: { id: string } 
                       </div>
                     </div>
                     {isPdf ? (
-                      <div className="w-full bg-gray-100 p-2">
-                        <iframe
-                          src={`${file.url}#toolbar=1&navpanes=1&scrollbar=1`}
-                          className="w-full h-[700px] border-0 rounded-lg bg-white shadow-inner"
-                          title={file.fileName}
-                          style={{ minHeight: '600px' }}
-                        >
-                          <div className="p-8 text-center">
-                            <p className="text-gray-600 mb-4">
-                              Ваш браузер не поддерживает встроенный просмотр PDF.
-                            </p>
-                            <a
-                              href={file.url}
-                              download={file.fileName}
-                              className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md font-medium"
-                            >
-                              Скачать PDF документ
-                            </a>
-                          </div>
-                        </iframe>
+                      <div className="w-full bg-gray-50 p-4">
+                        <div className="w-full bg-white rounded-lg shadow-sm overflow-hidden" style={{ height: '800px' }}>
+                          <iframe
+                            src={`${file.url}#toolbar=1&navpanes=1&scrollbar=1`}
+                            className="w-full h-full border-0"
+                            title={file.fileName}
+                            style={{ minHeight: '800px' }}
+                            allow="fullscreen"
+                          >
+                            <div className="p-8 text-center h-full flex flex-col items-center justify-center">
+                              <p className="text-gray-600 mb-4">
+                                Ваш браузер не поддерживает встроенный просмотр PDF.
+                              </p>
+                              <a
+                                href={file.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md font-medium"
+                              >
+                                Открыть PDF в новом окне
+                              </a>
+                            </div>
+                          </iframe>
+                        </div>
                       </div>
                     ) : (
                       <div className="p-6">
