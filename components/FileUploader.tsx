@@ -91,14 +91,12 @@ export default function FileUploader({
         </span>
       </div>
 
-      <div className="upload-button-container">
-        <UploadButton
-          endpoint={getUploadEndpoint()}
-          onClientUploadComplete={handleUploadComplete}
-          onUploadError={handleUploadError}
-          className="ut-button:bg-blue-600 ut-button:hover:bg-blue-700 ut-button:mx-auto"
-        />
-      </div>
+      <UploadButton
+        endpoint={getUploadEndpoint()}
+        onClientUploadComplete={handleUploadComplete}
+        onUploadError={handleUploadError}
+        className="ut-button:bg-blue-600 ut-button:hover:bg-blue-700"
+      />
 
       {uploadedFiles.length > 0 && (
         <div className="mt-4 space-y-2">

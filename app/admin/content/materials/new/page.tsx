@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Upload, X, FileText, Video, Image, Music, File, Plus, Trash2 } from 'lucide-react'
 import RichTextEditor from '@/components/RichTextEditor'
 import FileUploader from '@/components/FileUploader'
 
@@ -36,13 +36,14 @@ function NewMaterialPageContent() {
   const [formData, setFormData] = useState({
     title: '',
     content: '',
+    type: 'text' as 'text' | 'video' | 'audio' | 'image' | 'pdf' | 'file',
     order: 0,
   })
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
-  const [uploadedPdfFiles, setUploadedPdfFiles] = useState<UploadedFile[]>([])
-  const [uploadedWordFiles, setUploadedWordFiles] = useState<UploadedFile[]>([])
-  const [uploadedOtherFiles, setUploadedOtherFiles] = useState<UploadedFile[]>([])
+  const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({})
   const [error, setError] = useState('')
+  const [uploadingFiles, setUploadingFiles] = useState<string[]>([])
 
   useEffect(() => {
     fetchStations()
@@ -52,68 +53,27 @@ function NewMaterialPageContent() {
     }
     
     // Восстанавливаем загруженные файлы из localStorage
-    const savedPdfFiles = localStorage.getItem('material_pdf_files')
-    const savedWordFiles = localStorage.getItem('material_word_files')
-    const savedOtherFiles = localStorage.getItem('material_other_files')
-    
-    if (savedPdfFiles) {
+    const savedFiles = localStorage.getItem('material_uploaded_files')
+    if (savedFiles) {
       try {
-        const files = JSON.parse(savedPdfFiles)
+        const files = JSON.parse(savedFiles)
         if (Array.isArray(files) && files.length > 0) {
-          setUploadedPdfFiles(files)
+          setUploadedFiles(files)
         }
       } catch (e) {
-        console.error('Error restoring PDF files:', e)
-      }
-    }
-    
-    if (savedWordFiles) {
-      try {
-        const files = JSON.parse(savedWordFiles)
-        if (Array.isArray(files) && files.length > 0) {
-          setUploadedWordFiles(files)
-        }
-      } catch (e) {
-        console.error('Error restoring Word files:', e)
-      }
-    }
-    
-    if (savedOtherFiles) {
-      try {
-        const files = JSON.parse(savedOtherFiles)
-        if (Array.isArray(files) && files.length > 0) {
-          setUploadedOtherFiles(files)
-        }
-      } catch (e) {
-        console.error('Error restoring other files:', e)
+        console.error('Error restoring files:', e)
       }
     }
   }, [searchParams])
 
   // Сохраняем загруженные файлы в localStorage
   useEffect(() => {
-    if (uploadedPdfFiles.length > 0) {
-      localStorage.setItem('material_pdf_files', JSON.stringify(uploadedPdfFiles))
+    if (uploadedFiles.length > 0) {
+      localStorage.setItem('material_uploaded_files', JSON.stringify(uploadedFiles))
     } else {
-      localStorage.removeItem('material_pdf_files')
+      localStorage.removeItem('material_uploaded_files')
     }
-  }, [uploadedPdfFiles])
-
-  useEffect(() => {
-    if (uploadedWordFiles.length > 0) {
-      localStorage.setItem('material_word_files', JSON.stringify(uploadedWordFiles))
-    } else {
-      localStorage.removeItem('material_word_files')
-    }
-  }, [uploadedWordFiles])
-
-  useEffect(() => {
-    if (uploadedOtherFiles.length > 0) {
-      localStorage.setItem('material_other_files', JSON.stringify(uploadedOtherFiles))
-    } else {
-      localStorage.removeItem('material_other_files')
-    }
-  }, [uploadedOtherFiles])
+  }, [uploadedFiles])
 
   const fetchStations = async () => {
     try {
@@ -138,50 +98,170 @@ function NewMaterialPageContent() {
     }
   }
 
+  const handleMultipleFileUpload = async (files: FileList | null, fileType: string) => {
+    if (!files || files.length === 0) return
 
-  const removePdfFile = (index: number) => {
-    setUploadedPdfFiles(prev => {
-      const newFiles = prev.filter((_, i) => i !== index)
-      if (newFiles.length > 0) {
-        localStorage.setItem('material_pdf_files', JSON.stringify(newFiles))
-      } else {
-        localStorage.removeItem('material_pdf_files')
+    setUploading(true)
+    setError('')
+    const fileArray = Array.from(files)
+    
+    // Проверяем размер файлов на клиенте перед загрузкой
+    const MAX_SIZE = 100 * 1024 * 1024 // 100MB
+    const oversizedFiles = fileArray.filter(f => f.size > MAX_SIZE)
+    if (oversizedFiles.length > 0) {
+      setError(`Следующие файлы слишком большие (максимум 100MB): ${oversizedFiles.map(f => f.name).join(', ')}`)
+      setUploading(false)
+      return
+    }
+    
+    const fileNames = fileArray.map(f => f.name)
+    setUploadingFiles(fileNames)
+
+    const successfullyUploaded: UploadedFile[] = []
+    const errors: string[] = []
+
+    // Загружаем файлы по одному через существующий endpoint
+    for (let i = 0; i < fileArray.length; i++) {
+      const file = fileArray[i]
+      const fileName = file.name
+
+      try {
+        setUploadProgress(prev => ({ ...prev, [fileName]: 0 }))
+
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('fileType', fileType)
+
+        // Используем fetch с отслеживанием прогресса
+        const xhr = new XMLHttpRequest()
+
+        const uploadPromise = new Promise<UploadedFile>((resolve, reject) => {
+          xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+              const percentComplete = (e.loaded / e.total) * 100
+              setUploadProgress(prev => ({ ...prev, [fileName]: percentComplete }))
+            }
+          })
+
+          xhr.addEventListener('load', () => {
+            if (xhr.status === 200) {
+              try {
+                const data = JSON.parse(xhr.responseText)
+                if (data.url) {
+                  resolve({
+                    url: data.url,
+                    fileName: data.fileName,
+                    fileSize: data.fileSize,
+                    fileType: data.fileType,
+                  })
+                } else {
+                  reject(new Error('Файл не был загружен'))
+                }
+              } catch (e) {
+                reject(new Error('Ошибка при обработке ответа'))
+              }
+            } else {
+              try {
+                const data = JSON.parse(xhr.responseText)
+                // Используем детальное сообщение об ошибке от сервера
+                const errorMsg = data.message || `Ошибка загрузки файла (код: ${xhr.status})`
+                console.error('Upload error response:', data)
+                reject(new Error(errorMsg))
+              } catch (parseError) {
+                console.error('Failed to parse error response:', xhr.responseText)
+                reject(new Error(`Ошибка загрузки: ${xhr.status}. Ответ сервера: ${xhr.responseText.substring(0, 200)}`))
+              }
+            }
+          })
+
+          xhr.addEventListener('error', () => {
+            let errorMsg = 'Ошибка сети при загрузке файла'
+            try {
+              if (xhr.responseText) {
+                const errorData = JSON.parse(xhr.responseText)
+                errorMsg = errorData.message || errorMsg
+              }
+            } catch {}
+            reject(new Error(errorMsg))
+          })
+
+          xhr.addEventListener('abort', () => {
+            reject(new Error('Загрузка файла была прервана'))
+          })
+
+          xhr.open('POST', '/api/materials/upload')
+          xhr.send(formData)
+        })
+
+        const uploaded = await uploadPromise
+        successfullyUploaded.push(uploaded)
+        setUploadProgress(prev => {
+          const newProgress = { ...prev }
+          delete newProgress[fileName]
+          return newProgress
+        })
+      } catch (err: any) {
+        let errorMsg = err.message || 'Ошибка при загрузке файла'
+        console.error(`Error uploading ${fileName}:`, err)
+        
+        // Улучшаем сообщения об ошибках для пользователя
+        if (errorMsg.includes('Неподдерживаемый тип файла') || errorMsg.includes('Неподдерживаемый формат')) {
+          // Оставляем оригинальное сообщение, так как оно уже содержит детали
+          errorMsg = errorMsg
+        } else if (errorMsg.includes('слишком большой')) {
+          errorMsg = `Файл слишком большой. Максимальный размер: 100MB`
+        } else if (errorMsg.includes('сети') || errorMsg.includes('network')) {
+          errorMsg = `Проблема с интернет-соединением. Проверьте подключение и попробуйте снова.`
+        } else if (errorMsg.includes('Ошибка при загрузке файла')) {
+          // Если это общая ошибка, добавляем имя файла
+          errorMsg = `Ошибка при загрузке файла ${fileName}. Проверьте формат и размер файла.`
+        }
+        
+        errors.push(`${fileName}: ${errorMsg}`)
+        setUploadProgress(prev => {
+          const newProgress = { ...prev }
+          delete newProgress[fileName]
+          return newProgress
+        })
       }
-      return newFiles
-    })
+    }
+
+    // Обновляем список загруженных файлов
+    if (successfullyUploaded.length > 0) {
+      setUploadedFiles(prev => [...prev, ...successfullyUploaded])
+    }
+
+    // Показываем ошибки, если есть
+    if (errors.length > 0) {
+      const errorMessage = errors.length === fileArray.length
+        ? `Не удалось загрузить файлы: ${errors.join('; ')}`
+        : `Загружено ${successfullyUploaded.length} из ${fileArray.length}. Ошибки: ${errors.join('; ')}`
+      setError(errorMessage)
+    } else if (successfullyUploaded.length > 0) {
+      // Показываем успешное сообщение
+      setError('')
+    }
+
+    setUploadingFiles([])
+    setUploading(false)
   }
 
-  const removeWordFile = (index: number) => {
-    setUploadedWordFiles(prev => {
+  const removeFile = (index: number) => {
+    setUploadedFiles(prev => {
       const newFiles = prev.filter((_, i) => i !== index)
+      // Обновляем localStorage
       if (newFiles.length > 0) {
-        localStorage.setItem('material_word_files', JSON.stringify(newFiles))
+        localStorage.setItem('material_uploaded_files', JSON.stringify(newFiles))
       } else {
-        localStorage.removeItem('material_word_files')
-      }
-      return newFiles
-    })
-  }
-
-  const removeOtherFile = (index: number) => {
-    setUploadedOtherFiles(prev => {
-      const newFiles = prev.filter((_, i) => i !== index)
-      if (newFiles.length > 0) {
-        localStorage.setItem('material_other_files', JSON.stringify(newFiles))
-      } else {
-        localStorage.removeItem('material_other_files')
+        localStorage.removeItem('material_uploaded_files')
       }
       return newFiles
     })
   }
 
   const clearAllFiles = () => {
-    setUploadedPdfFiles([])
-    setUploadedWordFiles([])
-    setUploadedOtherFiles([])
-    localStorage.removeItem('material_pdf_files')
-    localStorage.removeItem('material_word_files')
-    localStorage.removeItem('material_other_files')
+    setUploadedFiles([])
+    localStorage.removeItem('material_uploaded_files')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -196,64 +276,43 @@ function NewMaterialPageContent() {
     }
 
     try {
-      // Собираем все файлы
-      const allFiles: UploadedFile[] = [
-        ...uploadedPdfFiles,
-        ...uploadedWordFiles,
-      ...uploadedOtherFiles,
-      ]
-
-      // Определяем тип материала на основе первого файла (для обратной совместимости)
-      let materialType = 'text'
-      let mainFileUrl = null
-      let mainFileName = null
-      let mainFileSize = null
-
-      if (allFiles.length > 0) {
-        const firstFile = allFiles[0]
-        mainFileUrl = firstFile.url
-        mainFileName = firstFile.fileName
-        mainFileSize = firstFile.fileSize
-        
-        // Определяем тип по расширению файла
-        const ext = firstFile.fileName.split('.').pop()?.toLowerCase()
-        if (ext === 'pdf') {
-          materialType = 'pdf'
-        } else if (['doc', 'docx'].includes(ext || '')) {
-          materialType = 'file'
-        } else {
-          materialType = 'file'
-        }
-      }
-
-      // Формируем структурированный контент
-      const contentData: any = {
-        text: formData.content || '',
-      }
-
-      // Добавляем все файлы в структурированный формат
-      if (allFiles.length > 0) {
-        contentData.files = allFiles.map(f => ({
-          url: f.url,
-          fileName: f.fileName,
-          fileSize: f.fileSize,
-          fileType: f.fileType,
-        }))
-      }
-
+      // Для материалов с файлами используем первый файл как основной
       const payload: any = {
         sectionId: selectedSection,
         title: formData.title,
-        content: JSON.stringify(contentData),
-        type: materialType,
+        content: formData.content,
+        type: formData.type,
         order: formData.order,
       }
 
-      // Для обратной совместимости сохраняем первый файл в основные поля
-      if (mainFileUrl) {
-        payload.fileUrl = mainFileUrl
-        payload.fileName = mainFileName
-        payload.fileSize = mainFileSize
+      // Если есть загруженные файлы
+      if (uploadedFiles.length > 0) {
+        const firstFile = uploadedFiles[0]
+        if (formData.type === 'video') {
+          payload.videoUrl = firstFile.url
+        } else if (formData.type === 'audio') {
+          payload.audioUrl = firstFile.url
+        } else if (formData.type === 'image') {
+          payload.imageUrl = firstFile.url
+        } else {
+          payload.fileUrl = firstFile.url
+          payload.fileName = firstFile.fileName
+          payload.fileSize = firstFile.fileSize
+        }
+
+        // Если файлов несколько, сохраняем их в content как JSON
+        if (uploadedFiles.length > 1) {
+          const additionalFiles = uploadedFiles.slice(1)
+          payload.content = JSON.stringify({
+            text: formData.content,
+            additionalFiles: additionalFiles.map(f => ({
+              url: f.url,
+              fileName: f.fileName,
+              fileSize: f.fileSize,
+              type: f.fileType,
+            })),
+          })
+        }
       }
 
       const res = await fetch('/api/materials', {
@@ -269,9 +328,7 @@ function NewMaterialPageContent() {
       }
 
       // Очищаем localStorage после успешного создания
-      localStorage.removeItem('material_pdf_files')
-      localStorage.removeItem('material_word_files')
-      localStorage.removeItem('material_other_files')
+      localStorage.removeItem('material_uploaded_files')
       router.push('/admin/content')
     } catch (err: any) {
       setError(err.message || 'Ошибка при создании материала')
@@ -373,103 +430,85 @@ function NewMaterialPageContent() {
               />
             </div>
 
-            {/* Текстовый контент */}
+            {/* Тип материала */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Тип материала *
+              </label>
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { value: 'text', label: 'Текст', icon: FileText, color: 'gray' },
+                  { value: 'video', label: 'Видео', icon: Video, color: 'red' },
+                  { value: 'audio', label: 'Аудио', icon: Music, color: 'purple' },
+                  { value: 'image', label: 'Изображение', icon: Image, color: 'blue' },
+                  { value: 'pdf', label: 'PDF', icon: File, color: 'orange' },
+                  { value: 'file', label: 'Файл', icon: File, color: 'green' },
+                ].map(({ value, label, icon: Icon, color }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => {
+                      setFormData({ ...formData, type: value as any })
+                      setUploadedFiles([])
+                    }}
+                    className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg transition-all ${
+                      formData.type === value
+                        ? `border-${color}-600 bg-${color}-50 shadow-md`
+                        : 'border-gray-300 hover:border-gray-400 hover:shadow-sm'
+                    }`}
+                  >
+                    <Icon className={`w-6 h-6 mb-2 ${formData.type === value ? `text-${color}-600` : 'text-gray-500'}`} />
+                    <span className="text-sm font-medium">{label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Множественная загрузка файлов через UploadThing */}
+            {formData.type !== 'text' && (
+              <div>
+                <FileUploader
+                  fileType={formData.type === 'pdf' ? 'file' : formData.type}
+                  onUploadComplete={(files) => {
+                    setUploadedFiles(files)
+                    // Сохраняем в localStorage
+                    if (files.length > 0) {
+                      localStorage.setItem('material_uploaded_files', JSON.stringify(files))
+                    } else {
+                      localStorage.removeItem('material_uploaded_files')
+                    }
+                  }}
+                  existingFiles={uploadedFiles}
+                  onRemoveFile={(index) => {
+                    removeFile(index)
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Контент */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Текстовое содержимое
+                {formData.type === 'text' ? 'Содержимое *' : 'Описание'}
               </label>
-              <RichTextEditor
-                value={formData.content}
-                onChange={(value) => setFormData({ ...formData, content: value })}
-                placeholder="Введите текст материала (необязательно)..."
-              />
+              {formData.type === 'text' ? (
+                <RichTextEditor
+                  value={formData.content}
+                  onChange={(value) => setFormData({ ...formData, content: value })}
+                  placeholder="Введите текст материала..."
+                  required={formData.type === 'text'}
+                />
+              ) : (
+                <RichTextEditor
+                  value={formData.content}
+                  onChange={(value) => setFormData({ ...formData, content: value })}
+                  placeholder="Дополнительное описание (необязательно)"
+                />
+              )}
               <p className="text-xs text-gray-500 mt-1">
                 Используйте панель инструментов для форматирования текста: изменение размера, цвета, жирный, курсив и т.д.
               </p>
             </div>
-
-            {/* Загрузка PDF файлов */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                PDF документы
-              </label>
-              <FileUploader
-                fileType="pdf"
-                onUploadComplete={(files) => {
-                  setUploadedPdfFiles(files)
-                  if (files.length > 0) {
-                    localStorage.setItem('material_pdf_files', JSON.stringify(files))
-                  } else {
-                    localStorage.removeItem('material_pdf_files')
-                  }
-                }}
-                existingFiles={uploadedPdfFiles}
-                onRemoveFile={removePdfFile}
-              />
-            </div>
-
-            {/* Загрузка Word файлов */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Word документы (DOC, DOCX)
-              </label>
-              <FileUploader
-                fileType="file"
-                onUploadComplete={(files) => {
-                  // Фильтруем только Word файлы
-                  const wordFiles = files.filter(f => {
-                    const ext = f.fileName.split('.').pop()?.toLowerCase()
-                    return ext === 'doc' || ext === 'docx'
-                  })
-                  setUploadedWordFiles(wordFiles)
-                  if (wordFiles.length > 0) {
-                    localStorage.setItem('material_word_files', JSON.stringify(wordFiles))
-                  } else {
-                    localStorage.removeItem('material_word_files')
-                  }
-                }}
-                existingFiles={uploadedWordFiles}
-                onRemoveFile={removeWordFile}
-              />
-            </div>
-
-            {/* Загрузка других файлов */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Другие файлы
-              </label>
-              <FileUploader
-                fileType="file"
-                onUploadComplete={(files) => {
-                  // Фильтруем файлы, которые не PDF и не Word
-                  const otherFiles = files.filter(f => {
-                    const ext = f.fileName.split('.').pop()?.toLowerCase()
-                    return ext !== 'pdf' && ext !== 'doc' && ext !== 'docx'
-                  })
-                  setUploadedOtherFiles(otherFiles)
-                  if (otherFiles.length > 0) {
-                    localStorage.setItem('material_other_files', JSON.stringify(otherFiles))
-                  } else {
-                    localStorage.removeItem('material_other_files')
-                  }
-                }}
-                existingFiles={uploadedOtherFiles}
-                onRemoveFile={removeOtherFile}
-              />
-            </div>
-
-            {/* Кнопка очистки всех файлов */}
-            {(uploadedPdfFiles.length > 0 || uploadedWordFiles.length > 0 || uploadedOtherFiles.length > 0) && (
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={clearAllFiles}
-                  className="px-4 py-2 text-sm text-red-600 hover:text-red-700 border border-red-300 rounded-lg hover:bg-red-50 transition-colors"
-                >
-                  Очистить все файлы
-                </button>
-              </div>
-            )}
 
             {/* Порядок */}
             <div>
@@ -495,7 +534,7 @@ function NewMaterialPageContent() {
               </Link>
               <button
                 type="submit"
-                disabled={loading || (formData.content.trim() === '' && uploadedPdfFiles.length === 0 && uploadedWordFiles.length === 0 && uploadedOtherFiles.length === 0)}
+                disabled={loading || uploading || (formData.type !== 'text' && uploadedFiles.length === 0)}
                 className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md hover:shadow-lg"
               >
                 {loading ? 'Создание...' : 'Создать материал'}

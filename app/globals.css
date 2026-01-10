@@ -76,14 +76,4 @@ body {
   .media-gallery-image {
     @apply w-full h-auto max-h-[400px] object-contain rounded-lg;
   }
-  
-  /* Стили для кнопки UploadThing - центрирование */
-  .ut-button {
-    @apply flex justify-center items-center mx-auto !important;
-  }
-  
-  /* Контейнер для кнопки загрузки */
-  .upload-button-container {
-    @apply flex justify-center items-center w-full py-2;
-  }
 }
