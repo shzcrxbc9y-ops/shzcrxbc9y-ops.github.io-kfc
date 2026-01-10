@@ -168,16 +168,16 @@ export default function RegisterPage() {
   const isValid = (field: string) => touched[field] && !errors[field as keyof FormErrors] && formData[field as keyof typeof formData]
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-900/50 p-8 border border-gray-200 dark:border-gray-700">
           <div className="text-center">
-            <h2 className="text-3xl font-extrabold text-gray-900 mb-2">
+            <h2 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100 mb-2">
               Регистрация
             </h2>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Уже есть аккаунт?{' '}
-              <Link href="/login" className="font-medium text-primary-600 hover:text-primary-500 transition-colors">
+              <Link href="/login" className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 transition-colors">
                 Войдите в систему
               </Link>
             </p>
@@ -185,10 +185,10 @@ export default function RegisterPage() {
 
           <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
             {errors.general && (
-              <div className="bg-red-50 border-l-4 border-red-400 text-red-700 px-4 py-3 rounded">
+              <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 px-4 py-3 rounded">
                 <div className="flex">
                   <div className="flex-shrink-0">
-                    <XCircle className="h-5 w-5 text-red-400" />
+                    <XCircle className="h-5 w-5 text-red-400 dark:text-red-500" />
                   </div>
                   <div className="ml-3">
                     <p className="text-sm font-medium">{errors.general}</p>
@@ -199,7 +199,7 @@ export default function RegisterPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Имя *
                 </label>
                 <div className="relative">
@@ -212,8 +212,8 @@ export default function RegisterPage() {
                     onChange={(e) => handleChange('firstName', e.target.value)}
                     onBlur={() => handleBlur('firstName')}
                     className={`appearance-none relative block w-full px-3 py-2.5 border ${
-                      hasError('firstName') ? 'border-red-300' : isValid('firstName') ? 'border-green-300' : 'border-gray-300'
-                    } placeholder-gray-400 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors sm:text-sm`}
+                      hasError('firstName') ? 'border-red-300 dark:border-red-600' : isValid('firstName') ? 'border-green-300 dark:border-green-600' : 'border-gray-300 dark:border-gray-600'
+                    } placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent transition-colors sm:text-sm`}
                     placeholder="Иван"
                   />
                   {isValid('firstName') && (
@@ -240,7 +240,7 @@ export default function RegisterPage() {
                     onBlur={() => handleBlur('lastName')}
                     className={`appearance-none relative block w-full px-3 py-2.5 border ${
                       hasError('lastName') ? 'border-red-300' : isValid('lastName') ? 'border-green-300' : 'border-gray-300'
-                    } placeholder-gray-400 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors sm:text-sm`}
+                    } placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent transition-colors sm:text-sm`}
                     placeholder="Иванов"
                   />
                   {isValid('lastName') && (
@@ -303,7 +303,7 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5" />
@@ -315,7 +315,7 @@ export default function RegisterPage() {
               {formData.password && (
                 <div className="mt-2">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-gray-600">Надежность пароля:</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-300">Надежность пароля:</span>
                     <span className={`text-xs font-medium ${
                       passwordStrength.label === 'Слабый' ? 'text-red-600' :
                       passwordStrength.label === 'Средний' ? 'text-yellow-600' : 'text-green-600'
@@ -323,7 +323,7 @@ export default function RegisterPage() {
                       {passwordStrength.label}
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full transition-all ${passwordStrength.color}`}
                       style={{ width: `${Math.min((passwordStrength.strength / 5) * 100, 100)}%` }}
@@ -335,7 +335,7 @@ export default function RegisterPage() {
                 <p className="mt-1 text-sm text-red-600">{errors.password}</p>
               )}
               {!hasError('password') && formData.password && (
-                <div className="mt-2 text-xs text-gray-500">
+                <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                   <p>Минимум 6 символов</p>
                 </div>
               )}
@@ -363,7 +363,7 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   {showConfirmPassword ? (
                     <EyeOff className="h-5 w-5" />
@@ -390,7 +390,7 @@ export default function RegisterPage() {
                 type="text"
                 value={formData.position}
                 onChange={(e) => handleChange('position', e.target.value)}
-                className="appearance-none relative block w-full px-3 py-2.5 border border-gray-300 placeholder-gray-400 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors sm:text-sm"
+                className="appearance-none relative block w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent transition-colors sm:text-sm"
                 placeholder="Необязательно"
               />
             </div>
@@ -399,7 +399,7 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={loading || Object.keys(errors).some(key => key !== 'general' && errors[key as keyof FormErrors])}
-                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md hover:shadow-lg"
+                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 dark:bg-primary-500 hover:bg-primary-700 dark:hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-primary-500 dark:focus:ring-primary-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md hover:shadow-lg"
               >
                 {loading ? (
                   <span className="flex items-center">
