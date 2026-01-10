@@ -37,7 +37,6 @@ function NewMaterialPageContent() {
     title: '',
     content: '',
     type: 'text' as 'text' | 'video' | 'audio' | 'image' | 'pdf' | 'file',
-    order: 0,
   })
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
   const [uploading, setUploading] = useState(false)
@@ -282,7 +281,7 @@ function NewMaterialPageContent() {
         title: formData.title,
         content: formData.content,
         type: formData.type,
-        order: formData.order,
+        order: 0,
       }
 
       // Если есть загруженные файлы
@@ -508,20 +507,6 @@ function NewMaterialPageContent() {
               <p className="text-xs text-gray-500 mt-1">
                 Используйте панель инструментов для форматирования текста: изменение размера, цвета, жирный, курсив и т.д.
               </p>
-            </div>
-
-            {/* Порядок */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Порядок отображения
-              </label>
-              <input
-                type="number"
-                value={formData.order}
-                onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                min="0"
-              />
             </div>
 
             {/* Кнопки */}
