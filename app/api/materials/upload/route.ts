@@ -5,10 +5,25 @@ import { join } from 'path'
 import { existsSync } from 'fs'
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024 // 100MB
-const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/ogg']
-const ALLOWED_AUDIO_TYPES = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg']
-const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
-const ALLOWED_DOC_TYPES = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+// Расширенный список типов для мобильных устройств
+const ALLOWED_VIDEO_TYPES = [
+  'video/mp4', 'video/webm', 'video/ogg', 'video/quicktime', 
+  'video/x-msvideo', 'video/3gpp', 'video/3gpp2', 'video/x-matroska'
+]
+const ALLOWED_AUDIO_TYPES = [
+  'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 
+  'audio/aac', 'audio/mp4', 'audio/x-m4a', 'audio/webm'
+]
+const ALLOWED_IMAGE_TYPES = [
+  'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+  'image/heic', 'image/heif', 'image/x-icon', 'image/bmp'
+]
+const ALLOWED_DOC_TYPES = [
+  'application/pdf', 'application/msword', 
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+]
 
 export const dynamic = 'force-dynamic'
 
@@ -70,10 +85,34 @@ export async function POST(request: NextRequest) {
         )
     }
 
-    // Проверяем MIME тип
-    if (!allowedTypes.includes(file.type)) {
+    // Проверяем MIME тип (более гибкая проверка для мобильных устройств)
+    const fileTypeLower = file.type.toLowerCase()
+    const fileNameLower = file.name.toLowerCase()
+    
+    // Проверяем по MIME типу
+    const isAllowedMimeType = allowedTypes.some(type => fileTypeLower.includes(type.split('/')[1]))
+    
+    // Проверяем по расширению файла (для мобильных устройств, которые могут не передавать правильный MIME тип)
+    let isAllowedExtension = false
+    const extension = fileNameLower.split('.').pop() || ''
+    
+    if (fileType === 'video') {
+      isAllowedExtension = ['mp4', 'webm', 'ogg', 'mov', 'avi', '3gp', '3g2', 'mkv'].includes(extension)
+    } else if (fileType === 'audio') {
+      isAllowedExtension = ['mp3', 'wav', 'ogg', 'aac', 'm4a', 'webm'].includes(extension)
+    } else if (fileType === 'image') {
+      isAllowedExtension = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif', 'ico', 'bmp'].includes(extension)
+    } else if (fileType === 'pdf' || fileType === 'file') {
+      isAllowedExtension = ['pdf', 'doc', 'docx', 'xls', 'xlsx'].includes(extension)
+    }
+    
+    if (!isAllowedMimeType && !isAllowedExtension) {
       return NextResponse.json(
-        { message: `Неподдерживаемый тип файла. Разрешены: ${allowedTypes.join(', ')}` },
+        { 
+          message: `Неподдерживаемый тип файла. Разрешены: ${allowedTypes.join(', ')}. Ваш файл: ${file.type || 'неизвестный тип'}`,
+          receivedType: file.type,
+          fileName: file.name
+        },
         { status: 400 }
       )
     }
