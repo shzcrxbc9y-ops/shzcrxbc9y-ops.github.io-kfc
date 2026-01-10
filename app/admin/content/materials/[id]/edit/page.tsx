@@ -132,6 +132,16 @@ export default function EditMaterialPage({ params }: { params: { id: string } })
     setUploading(true)
     setError('')
     const fileArray = Array.from(files)
+    
+    // Проверяем размер файлов на клиенте перед загрузкой
+    const MAX_SIZE = 100 * 1024 * 1024 // 100MB
+    const oversizedFiles = fileArray.filter(f => f.size > MAX_SIZE)
+    if (oversizedFiles.length > 0) {
+      setError(`Следующие файлы слишком большие (максимум 100MB): ${oversizedFiles.map(f => f.name).join(', ')}`)
+      setUploading(false)
+      return
+    }
+    
     const fileNames = fileArray.map(f => f.name)
     setUploadingFiles(fileNames)
 
@@ -188,7 +198,14 @@ export default function EditMaterialPage({ params }: { params: { id: string } })
           })
 
           xhr.addEventListener('error', () => {
-            reject(new Error('Ошибка сети при загрузке файла'))
+            let errorMsg = 'Ошибка сети при загрузке файла'
+            try {
+              if (xhr.responseText) {
+                const errorData = JSON.parse(xhr.responseText)
+                errorMsg = errorData.message || errorMsg
+              }
+            } catch {}
+            reject(new Error(errorMsg))
           })
 
           xhr.addEventListener('abort', () => {
@@ -207,7 +224,15 @@ export default function EditMaterialPage({ params }: { params: { id: string } })
           return newProgress
         })
       } catch (err: any) {
-        const errorMsg = err.message || 'Ошибка при загрузке файла'
+        let errorMsg = err.message || 'Ошибка при загрузке файла'
+        // Улучшаем сообщения об ошибках для пользователя
+        if (errorMsg.includes('Неподдерживаемый тип файла')) {
+          errorMsg = `Неподдерживаемый формат файла. Проверьте, что файл соответствует выбранному типу материала.`
+        } else if (errorMsg.includes('слишком большой')) {
+          errorMsg = `Файл слишком большой. Максимальный размер: 100MB`
+        } else if (errorMsg.includes('сети')) {
+          errorMsg = `Проблема с интернет-соединением. Проверьте подключение и попробуйте снова.`
+        }
         errors.push(`${fileName}: ${errorMsg}`)
         setUploadProgress(prev => {
           const newProgress = { ...prev }
@@ -352,7 +377,7 @@ export default function EditMaterialPage({ params }: { params: { id: string } })
                     setSelectedStation(e.target.value)
                     setSelectedSection('')
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900 bg-white"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   required
                 >
                   <option value="">Выберите станцию</option>
@@ -371,7 +396,7 @@ export default function EditMaterialPage({ params }: { params: { id: string } })
                 <select
                   value={selectedSection}
                   onChange={(e) => setSelectedSection(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   required
                   disabled={!selectedStation}
                 >
@@ -393,7 +418,7 @@ export default function EditMaterialPage({ params }: { params: { id: string } })
                 type="text"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900 bg-white"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 required
               />
             </div>
@@ -568,7 +593,7 @@ export default function EditMaterialPage({ params }: { params: { id: string } })
                 type="number"
                 value={formData.order}
                 onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900 bg-white"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 min="0"
               />
             </div>
