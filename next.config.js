@@ -3,7 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   images: {
     domains: ['localhost'],
-    unoptimized: true, // Для GitHub Pages
+    unoptimized: false,
   },
   eslint: {
     ignoreDuringBuilds: true,
@@ -11,10 +11,8 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-  // Для GitHub Pages - статический экспорт
-  output: 'export',
-  trailingSlash: true,
-  basePath: process.env.NODE_ENV === 'production' ? '/shzcrxbc9y-ops.github.io-kfc' : '',
+  // Для Vercel - полнофункциональный сайт с API и БД
+  output: 'standalone',
 }
 
 module.exports = nextConfig
