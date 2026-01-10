@@ -345,7 +345,7 @@ function NewMaterialPageContent() {
                     setSelectedStation(e.target.value)
                     setSelectedSection('')
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900 bg-white"
                   required
                 >
                   <option value="">Выберите станцию</option>
@@ -364,7 +364,7 @@ function NewMaterialPageContent() {
                 <select
                   value={selectedSection}
                   onChange={(e) => setSelectedSection(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
                   required
                   disabled={!selectedStation}
                 >
@@ -387,7 +387,7 @@ function NewMaterialPageContent() {
                 type="text"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900 bg-white"
                 required
                 placeholder="Введите название материала"
               />
@@ -577,7 +577,7 @@ function NewMaterialPageContent() {
                 type="number"
                 value={formData.order}
                 onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900 bg-white"
                 min="0"
               />
             </div>
