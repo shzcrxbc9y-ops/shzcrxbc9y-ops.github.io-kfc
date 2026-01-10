@@ -3,6 +3,8 @@ import { requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
+export const dynamic = 'force-dynamic'
+
 const optionUpdateSchema = z.object({
   text: z.string().min(1, 'Текст варианта обязателен'),
   isCorrect: z.boolean().default(false),

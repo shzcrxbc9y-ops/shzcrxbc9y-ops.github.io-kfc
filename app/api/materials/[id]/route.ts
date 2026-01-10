@@ -3,6 +3,8 @@ import { requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
+export const dynamic = 'force-dynamic'
+
 const updateMaterialSchema = z.object({
   sectionId: z.string().optional(),
   title: z.string().min(1).optional(),

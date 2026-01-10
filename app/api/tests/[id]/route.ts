@@ -4,6 +4,8 @@ import { getCurrentUser } from '@/lib/auth'
 import { requireAuth } from '@/lib/auth'
 import { z } from 'zod'
 
+export const dynamic = 'force-dynamic'
+
 const testUpdateSchema = z.object({
   sectionId: z.string().min(1, 'Раздел обязателен'),
   title: z.string().min(1, 'Название обязательно'),

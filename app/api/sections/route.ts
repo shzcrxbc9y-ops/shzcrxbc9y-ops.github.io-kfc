@@ -3,6 +3,8 @@ import { requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
+export const dynamic = 'force-dynamic'
+
 const sectionSchema = z.object({
   stationId: z.string().min(1, 'Станция обязательна'),
   title: z.string().min(1, 'Название обязательно'),
