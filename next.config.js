@@ -13,6 +13,10 @@ const nextConfig = {
   },
   // Для Vercel - полнофункциональный сайт с API и БД
   output: 'standalone',
+  // Отключаем статическую генерацию для страниц с динамическим контентом
+  experimental: {
+    missingSuspenseWithCSRBailout: false,
+  },
 }
 
 module.exports = nextConfig
