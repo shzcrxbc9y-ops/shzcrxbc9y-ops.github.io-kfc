@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAuth } from '@/lib/auth'
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { existsSync } from 'fs'
+import { cookies } from 'next/headers'
+import jwt from 'jsonwebtoken'
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024 // 100MB
 const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/ogg']
@@ -11,10 +12,46 @@ const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp
 const ALLOWED_DOC_TYPES = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
 
 export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+export const maxDuration = 60
+
+// Упрощенная проверка авторизации без Prisma
+async function checkAuth(): Promise<{ authorized: boolean; error?: string }> {
+  try {
+    const cookieStore = await cookies()
+    const token = cookieStore.get('auth-token')?.value
+
+    if (!token) {
+      return { authorized: false, error: 'Unauthorized' }
+    }
+
+    const secret = process.env.JWT_SECRET || 'your-secret-key'
+    
+    try {
+      const decoded = jwt.verify(token, secret) as { userId: string; email: string; role: string }
+      
+      if (decoded.role !== 'ADMIN') {
+        return { authorized: false, error: 'Forbidden' }
+      }
+
+      return { authorized: true }
+    } catch (jwtError) {
+      return { authorized: false, error: 'Unauthorized' }
+    }
+  } catch (error) {
+    return { authorized: false, error: 'Unauthorized' }
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
-    await requireAuth('ADMIN')
+    const authResult = await checkAuth()
+    if (!authResult.authorized) {
+      return NextResponse.json(
+        { message: 'Доступ запрещен. Требуются права администратора.' },
+        { status: 403 }
+      )
+    }
 
     const formData = await request.formData()
     const files = formData.getAll('files') as File[]
@@ -134,13 +171,6 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     )
   } catch (error: any) {
-    if (error.message === 'Unauthorized' || error.message === 'Forbidden') {
-      return NextResponse.json(
-        { message: 'Доступ запрещен. Требуются права администратора.' },
-        { status: 403 }
-      )
-    }
-
     console.error('Upload error:', error)
     return NextResponse.json(
       { message: 'Ошибка при загрузке файлов' },
