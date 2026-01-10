@@ -14,16 +14,17 @@
 2. Выберите ваш проект
 3. Перейдите в **Settings** → **Environment Variables**
 4. Добавьте следующие переменные:
-   - **Name:** `UPLOADTHING_TOKEN`
+   - **Name:** `UPLOADTHING_SECRET`
      **Value:** `ваш_секретный_ключ_из_uploadthing` (начинается с `sk_live_...`)
-   - **Name:** `UPLOADTHING_APP_ID` (опционально, если требуется)
-     **Value:** `ваш_app_id_из_дашборда_uploadthing` (если требуется)
+   - **Name:** `UPLOADTHING_APP_ID`
+     **Value:** `ваш_app_id_из_дашборда_uploadthing` (получите из дашборда UploadThing)
 
 5. Выберите **Production**, **Preview**, и **Development** для обеих переменных
 6. Нажмите **Save**
 
 **Важно:** 
-- Используйте `UPLOADTHING_TOKEN` (не `UPLOADTHING_SECRET`)
+- Используйте `UPLOADTHING_SECRET` для секретного ключа (начинается с `sk_live_...`)
+- Используйте `UPLOADTHING_APP_ID` для ID приложения (начинается с `app_...`)
 - **НЕ добавляйте** секретные ключи в файлы, которые коммитятся в git
 
 ### 3. Перезапустите деплой:
@@ -34,7 +35,7 @@
    - Создайте файл `.env.local` в корне проекта (НЕ коммитьте его в git!)
    - Добавьте переменные:
      ```
-     UPLOADTHING_TOKEN=ваш_секретный_ключ_здесь
+     UPLOADTHING_SECRET=ваш_секретный_ключ_здесь
      UPLOADTHING_APP_ID=ваш_app_id_здесь
      ```
    - Запустите: `npm run dev`

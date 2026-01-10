@@ -1,11 +1,25 @@
 import { createUploadthing, type FileRouter } from 'uploadthing/next'
 
-// Получаем токен из переменных окружения
-const token = process.env.UPLOADTHING_TOKEN || process.env.UPLOADTHING_SECRET
+// Получаем переменные окружения
+const apiKey = process.env.UPLOADTHING_SECRET || process.env.UPLOADTHING_TOKEN
+const appId = process.env.UPLOADTHING_APP_ID
 
-if (!token) {
-  throw new Error('Missing UPLOADTHING_TOKEN or UPLOADTHING_SECRET environment variable')
+if (!apiKey) {
+  throw new Error('Missing UPLOADTHING_SECRET or UPLOADTHING_TOKEN environment variable')
 }
+
+if (!appId) {
+  throw new Error('Missing UPLOADTHING_APP_ID environment variable')
+}
+
+// Создаем токен в формате base64-encoded JSON
+const tokenData = {
+  apiKey: apiKey,
+  appId: appId,
+  regions: ['auto'], // Используем автоматический выбор региона
+}
+
+const token = Buffer.from(JSON.stringify(tokenData)).toString('base64')
 
 const f = createUploadthing({
   token: token,
