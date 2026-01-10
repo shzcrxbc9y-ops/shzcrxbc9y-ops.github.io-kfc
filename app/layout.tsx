@@ -9,10 +9,8 @@ const inter = Inter({ subsets: ['latin', 'cyrillic'] })
 export const metadata: Metadata = {
   title: 'KFC Training Platform',
   description: 'Платформа обучения сотрудников KFC',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'KFC Training',
+  other: {
+    'mobile-web-app-capable': 'yes',
   },
 }
 
@@ -34,7 +32,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <AuthProvider>
           <Navbar />
-          <main className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+          <main className="min-h-screen bg-gray-50">
             {children}
           </main>
         </AuthProvider>

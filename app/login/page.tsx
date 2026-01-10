@@ -91,23 +91,23 @@ function LoginPageContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-6 sm:space-y-8 px-4 sm:px-0">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-900/50 p-8 border border-gray-200 dark:border-gray-700">
+        <div className="bg-white rounded-xl shadow-lg p-8">
           <div className="text-center">
-            <h2 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100 mb-2">
+            <h2 className="text-3xl font-extrabold text-gray-900 mb-2">
               Вход в систему
             </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-300">
+            <p className="text-sm text-gray-600">
               Нет аккаунта?{' '}
-              <Link href="/register" className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 transition-colors">
+              <Link href="/register" className="font-medium text-primary-600 hover:text-primary-500 transition-colors">
                 Зарегистрируйтесь
               </Link>
             </p>
           </div>
 
           {registered && (
-            <div className="mt-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200 px-4 py-3 rounded-lg flex items-center space-x-2">
+            <div className="mt-4 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg flex items-center space-x-2">
               <CheckCircle className="w-5 h-5" />
               <span className="text-sm">Регистрация успешна! Теперь вы можете войти.</span>
             </div>
@@ -115,10 +115,10 @@ function LoginPageContent() {
 
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 px-4 py-3 rounded">
+              <div className="bg-red-50 border-l-4 border-red-400 text-red-700 px-4 py-3 rounded">
                 <div className="flex">
                   <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-red-400 dark:text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                     </svg>
                   </div>
@@ -131,7 +131,7 @@ function LoginPageContent() {
 
             <div className="space-y-4">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                   Email адрес
                 </label>
                 <input
@@ -146,18 +146,18 @@ function LoginPageContent() {
                     if (emailError) validateEmail(e.target.value)
                   }}
                   onBlur={() => validateEmail(email)}
-                  className={`appearance-none relative block w-full px-3 py-2.5 border bg-white dark:bg-gray-700 ${
-                    emailError ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
-                  } placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent transition-colors sm:text-sm`}
+                  className={`appearance-none relative block w-full px-3 py-2.5 border ${
+                    emailError ? 'border-red-300' : 'border-gray-300'
+                  } placeholder-gray-400 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors sm:text-sm`}
                   placeholder="your.email@example.com"
                 />
                 {emailError && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{emailError}</p>
+                  <p className="mt-1 text-sm text-red-600">{emailError}</p>
                 )}
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                   Пароль
                 </label>
                 <div className="relative">
@@ -173,15 +173,15 @@ function LoginPageContent() {
                       if (passwordError) validatePassword(e.target.value)
                     }}
                     onBlur={() => validatePassword(password)}
-                    className={`appearance-none relative block w-full px-3 py-2.5 pr-10 border bg-white dark:bg-gray-700 ${
-                      passwordError ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
-                    } placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent transition-colors sm:text-sm`}
+                    className={`appearance-none relative block w-full px-3 py-2.5 pr-10 border ${
+                      passwordError ? 'border-red-300' : 'border-gray-300'
+                    } placeholder-gray-400 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors sm:text-sm`}
                     placeholder="Введите пароль"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                   >
                     {showPassword ? (
                       <EyeOff className="h-5 w-5" />
@@ -191,7 +191,7 @@ function LoginPageContent() {
                   </button>
                 </div>
                 {passwordError && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{passwordError}</p>
+                  <p className="mt-1 text-sm text-red-600">{passwordError}</p>
                 )}
               </div>
             </div>
@@ -200,7 +200,7 @@ function LoginPageContent() {
               <button
                 type="submit"
                 disabled={loading || !!emailError || !!passwordError}
-                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 dark:bg-primary-500 hover:bg-primary-700 dark:hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-primary-500 dark:focus:ring-primary-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md hover:shadow-lg"
+                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md hover:shadow-lg"
               >
                 {loading ? (
                   <span className="flex items-center">
@@ -225,10 +225,10 @@ function LoginPageContent() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 dark:border-primary-400 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">Загрузка...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Загрузка...</p>
         </div>
       </div>
     }>

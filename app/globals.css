@@ -70,7 +70,7 @@ body {
   }
   
   .media-gallery-item {
-    @apply rounded-xl overflow-hidden shadow-lg bg-gray-50 dark:bg-gray-800 flex items-center justify-center p-2;
+    @apply rounded-xl overflow-hidden shadow-lg bg-gray-50 flex items-center justify-center p-2;
   }
   
   .media-gallery-image {

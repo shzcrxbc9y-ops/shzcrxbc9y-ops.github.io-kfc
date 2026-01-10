@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Upload, X, FileText, Video, Image, Music, File, Plus, Trash2 } from 'lucide-react'
 import RichTextEditor from '@/components/RichTextEditor'
+import FileUploader from '@/components/FileUploader'
 
 interface Station {
   id: string
@@ -463,120 +464,25 @@ function NewMaterialPageContent() {
               </div>
             </div>
 
-            {/* Множественная загрузка файлов */}
+            {/* Множественная загрузка файлов через UploadThing */}
             {formData.type !== 'text' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Загрузить файлы (можно несколько) *
-                </label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-primary-400 transition-colors">
-                  <label className="cursor-pointer block">
-                    <input
-                      type="file"
-                      className="hidden"
-                      multiple
-                      accept={
-                        formData.type === 'video'
-                          ? 'video/*'
-                          : formData.type === 'audio'
-                          ? 'audio/*'
-                          : formData.type === 'image'
-                          ? 'image/*'
-                          : '.pdf,.doc,.docx'
-                      }
-                      onChange={(e) => {
-                        handleMultipleFileUpload(e.target.files, formData.type)
-                        e.target.value = '' // Сбрасываем input
-                      }}
-                      disabled={uploading}
-                    />
-                    <div className="text-center">
-                      <Upload className={`w-12 h-12 mx-auto mb-2 ${uploading ? 'text-primary-400 animate-bounce' : 'text-gray-400'}`} />
-                      <p className="text-sm text-gray-600">
-                        {uploading ? 'Загрузка файлов...' : 'Нажмите для выбора файлов'}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Можно выбрать несколько файлов • Максимум 100MB на файл
-                      </p>
-                    </div>
-                  </label>
-                </div>
-
-                {/* Прогресс загрузки */}
-                {uploadingFiles.length > 0 && (
-                  <div className="mt-4 space-y-2">
-                    <p className="text-sm font-medium text-gray-700">
-                      Загрузка файлов...
-                    </p>
-                    {uploadingFiles.map((fileName, index) => {
-                      const progress = uploadProgress[fileName] || 0
-                      return (
-                        <div key={index} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm text-gray-700 truncate flex-1">{fileName}</span>
-                            <span className="text-xs text-gray-500 ml-2">{Math.round(progress)}%</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div
-                              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                              style={{ width: `${progress}%` }}
-                            />
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-
-                {/* Список загруженных файлов */}
-                {uploadedFiles.length > 0 && (
-                  <div className="mt-4 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium text-gray-700">
-                        Загружено файлов: {uploadedFiles.length}
-                      </p>
-                      <button
-                        type="button"
-                        onClick={clearAllFiles}
-                        className="text-xs text-red-600 hover:text-red-700 hover:underline"
-                      >
-                        Очистить все
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
-                      {uploadedFiles.map((file, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
-                        >
-                          <div className="flex items-center space-x-3 flex-1 min-w-0">
-                            {formData.type === 'video' && <Video className="w-5 h-5 text-red-500 flex-shrink-0" />}
-                            {formData.type === 'audio' && <Music className="w-5 h-5 text-purple-500 flex-shrink-0" />}
-                            {formData.type === 'image' && <Image className="w-5 h-5 text-blue-500 flex-shrink-0" />}
-                            {(formData.type === 'pdf' || formData.type === 'file') && (
-                              <File className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-900 truncate">
-                                {file.fileName}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {formatFileSize(file.fileSize)}
-                              </p>
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removeFile(index)}
-                            className="ml-3 p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                <FileUploader
+                  fileType={formData.type === 'pdf' ? 'file' : formData.type}
+                  onUploadComplete={(files) => {
+                    setUploadedFiles(files)
+                    // Сохраняем в localStorage
+                    if (files.length > 0) {
+                      localStorage.setItem('material_uploaded_files', JSON.stringify(files))
+                    } else {
+                      localStorage.removeItem('material_uploaded_files')
+                    }
+                  }}
+                  existingFiles={uploadedFiles}
+                  onRemoveFile={(index) => {
+                    removeFile(index)
+                  }}
+                />
               </div>
             )}
 
