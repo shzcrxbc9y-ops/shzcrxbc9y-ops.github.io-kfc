@@ -14,10 +14,10 @@ export default async function HomePage() {
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
       <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 sm:mb-4 px-4">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-3 sm:mb-4 px-4">
           Добро пожаловать в платформу обучения KFC
         </h1>
-        <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto px-4">
+        <p className="text-base sm:text-lg lg:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto px-4">
           Изучайте корпоративные стандарты и проходите тестирование для проверки знаний
         </p>
       </div>
@@ -43,15 +43,15 @@ export default async function HomePage() {
         />
       </div>
 
-      <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8 max-w-4xl mx-auto">
-        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Начните обучение прямо сейчас</h2>
-        <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 sm:p-8 max-w-4xl mx-auto border border-gray-200 dark:border-gray-700">
+        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-gray-900 dark:text-gray-100">Начните обучение прямо сейчас</h2>
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mb-4 sm:mb-6">
           Наша платформа поможет вам быстро освоить все необходимые навыки для работы в KFC.
           Пройдите обучение по станциям и сдайте тесты для проверки знаний.
         </p>
         <Link
           href="/learning"
-          className="inline-block bg-primary-600 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors text-sm sm:text-base w-full sm:w-auto text-center"
+          className="inline-block bg-primary-600 dark:bg-primary-500 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors text-sm sm:text-base w-full sm:w-auto text-center"
         >
           Начать обучение
         </Link>
@@ -74,11 +74,11 @@ function FeatureCard({
   return (
     <Link
       href={href}
-      className="bg-white rounded-lg shadow-md p-5 sm:p-6 hover:shadow-lg transition-shadow"
+      className="bg-white dark:bg-gray-800 rounded-lg shadow-md dark:shadow-gray-900/50 p-5 sm:p-6 hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700"
     >
-      <div className="text-primary-600 mb-3 sm:mb-4">{icon}</div>
-      <h3 className="text-lg sm:text-xl font-semibold mb-2">{title}</h3>
-      <p className="text-sm sm:text-base text-gray-600">{description}</p>
+      <div className="text-primary-600 dark:text-primary-400 mb-3 sm:mb-4">{icon}</div>
+      <h3 className="text-lg sm:text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">{title}</h3>
+      <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">{description}</p>
     </Link>
   )
 }
