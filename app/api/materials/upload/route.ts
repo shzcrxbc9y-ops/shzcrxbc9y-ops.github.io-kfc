@@ -85,33 +85,56 @@ export async function POST(request: NextRequest) {
         )
     }
 
-    // Проверяем MIME тип (более гибкая проверка для мобильных устройств)
-    const fileTypeLower = file.type.toLowerCase()
+    // Проверяем MIME тип и расширение файла (более гибкая проверка для мобильных устройств)
+    const fileTypeLower = file.type ? file.type.toLowerCase() : ''
     const fileNameLower = file.name.toLowerCase()
     
+    // Получаем расширение файла (регистронезависимо)
+    const extension = fileNameLower.split('.').pop() || ''
+    
     // Проверяем по MIME типу
-    const isAllowedMimeType = allowedTypes.some(type => fileTypeLower.includes(type.split('/')[1]))
+    let isAllowedMimeType = false
+    if (fileTypeLower) {
+      isAllowedMimeType = allowedTypes.some(type => {
+        const typeParts = type.toLowerCase().split('/')
+        return fileTypeLower.includes(typeParts[0]) && fileTypeLower.includes(typeParts[1])
+      })
+    }
     
     // Проверяем по расширению файла (для мобильных устройств, которые могут не передавать правильный MIME тип)
     let isAllowedExtension = false
-    const extension = fileNameLower.split('.').pop() || ''
+    const allowedExtensions: string[] = []
     
     if (fileType === 'video') {
-      isAllowedExtension = ['mp4', 'webm', 'ogg', 'mov', 'avi', '3gp', '3g2', 'mkv'].includes(extension)
+      allowedExtensions.push('mp4', 'webm', 'ogg', 'mov', 'avi', '3gp', '3g2', 'mkv')
     } else if (fileType === 'audio') {
-      isAllowedExtension = ['mp3', 'wav', 'ogg', 'aac', 'm4a', 'webm'].includes(extension)
+      allowedExtensions.push('mp3', 'wav', 'ogg', 'aac', 'm4a', 'webm')
     } else if (fileType === 'image') {
-      isAllowedExtension = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif', 'ico', 'bmp'].includes(extension)
+      allowedExtensions.push('jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif', 'ico', 'bmp')
     } else if (fileType === 'pdf' || fileType === 'file') {
-      isAllowedExtension = ['pdf', 'doc', 'docx', 'xls', 'xlsx'].includes(extension)
+      allowedExtensions.push('pdf', 'doc', 'docx', 'xls', 'xlsx')
     }
     
+    isAllowedExtension = allowedExtensions.includes(extension)
+    
+    // Если ни MIME тип, ни расширение не подходят, возвращаем ошибку с деталями
     if (!isAllowedMimeType && !isAllowedExtension) {
+      console.error('File validation failed:', {
+        fileName: file.name,
+        fileType: file.type,
+        extension: extension,
+        requestedType: fileType,
+        allowedMimeTypes: allowedTypes,
+        allowedExtensions: allowedExtensions
+      })
+      
       return NextResponse.json(
         { 
-          message: `Неподдерживаемый тип файла. Разрешены: ${allowedTypes.join(', ')}. Ваш файл: ${file.type || 'неизвестный тип'}`,
-          receivedType: file.type,
-          fileName: file.name
+          message: `Неподдерживаемый тип файла. Для типа "${fileType}" разрешены расширения: ${allowedExtensions.join(', ')}. Ваш файл: ${file.name} (тип: ${file.type || 'неизвестный'}, расширение: ${extension})`,
+          receivedType: file.type || 'неизвестный',
+          receivedExtension: extension,
+          fileName: file.name,
+          allowedExtensions: allowedExtensions
         },
         { status: 400 }
       )
@@ -152,9 +175,19 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.error('Upload error:', error)
+    console.error('Upload error:', {
+      message: error.message,
+      stack: error.stack,
+      fileName: error.fileName || 'unknown'
+    })
+    
+    // Возвращаем более детальную информацию об ошибке
+    const errorMessage = error.message || 'Ошибка при загрузке файла'
     return NextResponse.json(
-      { message: 'Ошибка при загрузке файла' },
+      { 
+        message: errorMessage,
+        error: process.env.NODE_ENV === 'development' || process.env.VERCEL === '1' ? error.message : undefined
+      },
       { status: 500 }
     )
   }

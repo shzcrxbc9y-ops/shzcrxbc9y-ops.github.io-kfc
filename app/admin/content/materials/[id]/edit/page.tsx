@@ -190,9 +190,13 @@ export default function EditMaterialPage({ params }: { params: { id: string } })
             } else {
               try {
                 const data = JSON.parse(xhr.responseText)
-                reject(new Error(data.message || 'Ошибка загрузки файла'))
-              } catch {
-                reject(new Error(`Ошибка загрузки: ${xhr.status}`))
+                // Используем детальное сообщение об ошибке от сервера
+                const errorMsg = data.message || `Ошибка загрузки файла (код: ${xhr.status})`
+                console.error('Upload error response:', data)
+                reject(new Error(errorMsg))
+              } catch (parseError) {
+                console.error('Failed to parse error response:', xhr.responseText)
+                reject(new Error(`Ошибка загрузки: ${xhr.status}. Ответ сервера: ${xhr.responseText.substring(0, 200)}`))
               }
             }
           })
@@ -225,13 +229,19 @@ export default function EditMaterialPage({ params }: { params: { id: string } })
         })
       } catch (err: any) {
         let errorMsg = err.message || 'Ошибка при загрузке файла'
+        console.error(`Error uploading ${fileName}:`, err)
+        
         // Улучшаем сообщения об ошибках для пользователя
-        if (errorMsg.includes('Неподдерживаемый тип файла')) {
-          errorMsg = `Неподдерживаемый формат файла. Проверьте, что файл соответствует выбранному типу материала.`
+        if (errorMsg.includes('Неподдерживаемый тип файла') || errorMsg.includes('Неподдерживаемый формат')) {
+          // Оставляем оригинальное сообщение, так как оно уже содержит детали
+          errorMsg = errorMsg
         } else if (errorMsg.includes('слишком большой')) {
           errorMsg = `Файл слишком большой. Максимальный размер: 100MB`
-        } else if (errorMsg.includes('сети')) {
+        } else if (errorMsg.includes('сети') || errorMsg.includes('network')) {
           errorMsg = `Проблема с интернет-соединением. Проверьте подключение и попробуйте снова.`
+        } else if (errorMsg.includes('Ошибка при загрузке файла')) {
+          // Если это общая ошибка, добавляем имя файла
+          errorMsg = `Ошибка при загрузке файла ${fileName}. Проверьте формат и размер файла.`
         }
         errors.push(`${fileName}: ${errorMsg}`)
         setUploadProgress(prev => {
