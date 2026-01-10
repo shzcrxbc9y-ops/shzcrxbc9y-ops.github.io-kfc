@@ -369,12 +369,129 @@ export default async function MaterialPage({ params }: { params: { id: string } 
           return null
         })()}
 
+        {/* Изображения из структурированного контента */}
+        {material.content && (() => {
+          try {
+            const contentData = JSON.parse(material.content)
+            if (contentData.files && Array.isArray(contentData.files)) {
+              // Фильтруем изображения из files (не из additionalFiles)
+              const imageFiles = contentData.files.filter((f: any) => {
+                const ext = f.fileName?.split('.').pop()?.toLowerCase()
+                const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(ext)
+                const isImageType = f.type?.includes('image') || f.fileType === 'image'
+                return isImage || isImageType
+              })
+              
+              if (imageFiles.length > 0) {
+                return (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Изображения</h3>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      {imageFiles.map((file: any, index: number) => (
+                        <div key={index} className="w-full aspect-square md:aspect-video rounded-lg overflow-hidden shadow-lg">
+                          <img
+                            src={file.url}
+                            alt={file.fileName || `Изображение ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              }
+            }
+          } catch {}
+          return null
+        })()}
+
+        {/* Видео из структурированного контента */}
+        {material.content && (() => {
+          try {
+            const contentData = JSON.parse(material.content)
+            if (contentData.files && Array.isArray(contentData.files)) {
+              // Фильтруем видео из files (не из additionalFiles)
+              const videoFiles = contentData.files.filter((f: any) => {
+                const ext = f.fileName?.split('.').pop()?.toLowerCase()
+                const isVideo = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'].includes(ext)
+                const isVideoType = f.type?.includes('video') || f.fileType === 'video'
+                return isVideo || isVideoType
+              })
+              
+              if (videoFiles.length > 0) {
+                return (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Видео</h3>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      {videoFiles.map((file: any, index: number) => (
+                        <div key={index} className="w-full aspect-video bg-gray-900 rounded-lg overflow-hidden shadow-lg flex items-center justify-center">
+                          <video
+                            src={file.url}
+                            controls
+                            className="w-full h-full object-cover"
+                            preload="metadata"
+                          >
+                            Ваш браузер не поддерживает видео.
+                          </video>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              }
+            }
+          } catch {}
+          return null
+        })()}
+
+        {/* Аудио из структурированного контента */}
+        {material.content && (() => {
+          try {
+            const contentData = JSON.parse(material.content)
+            if (contentData.files && Array.isArray(contentData.files)) {
+              // Фильтруем аудио из files (не из additionalFiles)
+              const audioFiles = contentData.files.filter((f: any) => {
+                const ext = f.fileName?.split('.').pop()?.toLowerCase()
+                const isAudio = ['mp3', 'wav', 'ogg', 'aac', 'm4a', 'flac'].includes(ext)
+                const isAudioType = f.type?.includes('audio') || f.fileType === 'audio'
+                return isAudio || isAudioType
+              })
+              
+              if (audioFiles.length > 0) {
+                return (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Аудио</h3>
+                    <div className="space-y-3">
+                      {audioFiles.map((file: any, index: number) => (
+                        <div key={index} className="bg-gray-50 rounded-lg p-4">
+                          <audio
+                            src={file.url}
+                            controls
+                            className="w-full"
+                            preload="metadata"
+                          >
+                            Ваш браузер не поддерживает аудио.
+                          </audio>
+                          <p className="text-xs text-gray-600 mt-2">
+                            {file.fileName} {file.fileSize && `(${(file.fileSize / 1024 / 1024).toFixed(2)} MB)`}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              }
+            }
+          } catch {}
+          return null
+        })()}
+
         {/* Файлы из структурированного контента (PDF, Word, другие файлы) */}
         {material.content && (() => {
           try {
             const contentData = JSON.parse(material.content)
             if (contentData.files && Array.isArray(contentData.files) && contentData.files.length > 0) {
-              // Группируем файлы по типам
+              // Группируем файлы по типам (исключая изображения, видео и аудио)
               const pdfFiles = contentData.files.filter((f: any) => {
                 const ext = f.fileName?.split('.').pop()?.toLowerCase()
                 return ext === 'pdf'
@@ -385,7 +502,13 @@ export default async function MaterialPage({ params }: { params: { id: string } 
               })
               const otherFiles = contentData.files.filter((f: any) => {
                 const ext = f.fileName?.split('.').pop()?.toLowerCase()
-                return ext !== 'pdf' && ext !== 'doc' && ext !== 'docx'
+                const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(ext)
+                const isVideo = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'].includes(ext)
+                const isAudio = ['mp3', 'wav', 'ogg', 'aac', 'm4a', 'flac'].includes(ext)
+                const isImageType = f.type?.includes('image') || f.fileType === 'image'
+                const isVideoType = f.type?.includes('video') || f.fileType === 'video'
+                const isAudioType = f.type?.includes('audio') || f.fileType === 'audio'
+                return ext !== 'pdf' && ext !== 'doc' && ext !== 'docx' && !isImage && !isVideo && !isAudio && !isImageType && !isVideoType && !isAudioType
               })
 
               return (
