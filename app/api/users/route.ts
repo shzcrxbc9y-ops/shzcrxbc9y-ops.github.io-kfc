@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+// Принудительно динамический рендеринг (использует cookies)
+export const dynamic = 'force-dynamic'
+
 // GET - получить всех пользователей
 export async function GET(request: NextRequest) {
   try {
