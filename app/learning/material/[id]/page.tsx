@@ -369,51 +369,66 @@ export default async function MaterialPage({ params }: { params: { id: string } 
                 const fileSizeMB = file.fileSize ? (file.fileSize / 1024 / 1024).toFixed(2) : null
                 
                 return (
-                  <div key={index} className="bg-gray-50 rounded-lg p-6 border border-gray-200 shadow-sm">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-lg mb-1">
-                          {isPdf ? 'PDF документ' : 'Файл'} {allFiles.length > 1 ? `(${index + 1} из ${allFiles.length})` : ''}
-                        </h3>
-                        <p className="text-sm text-gray-600">
-                          {file.fileName}
-                          {fileSizeMB && ` (${fileSizeMB} MB)`}
-                        </p>
+                  <div key={index} className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg mb-1">
+                            {isPdf ? 'PDF документ' : 'Файл'} {allFiles.length > 1 ? `(${index + 1} из ${allFiles.length})` : ''}
+                          </h3>
+                          <p className="text-sm text-gray-600">
+                            {file.fileName}
+                            {fileSizeMB && ` (${fileSizeMB} MB)`}
+                          </p>
+                        </div>
+                        {isPdf && (
+                          <a
+                            href={file.url}
+                            download={file.fileName}
+                            className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors font-medium"
+                            title="Скачать PDF"
+                          >
+                            <FileText className="w-4 h-4 inline mr-1" />
+                            Скачать
+                          </a>
+                        )}
                       </div>
-                      <a
-                        href={file.url}
-                        download={file.fileName}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md font-medium whitespace-nowrap ml-4"
-                      >
-                        Скачать
-                      </a>
                     </div>
                     {isPdf ? (
-                      <div className="w-full">
+                      <div className="w-full bg-gray-100 p-2">
                         <iframe
-                          src={file.url}
-                          className="w-full h-[600px] border rounded-lg bg-white"
+                          src={`${file.url}#toolbar=1&navpanes=1&scrollbar=1`}
+                          className="w-full h-[700px] border-0 rounded-lg bg-white shadow-inner"
                           title={file.fileName}
+                          style={{ minHeight: '600px' }}
                         >
-                          <p className="p-4 text-center text-gray-600">
-                            Ваш браузер не поддерживает просмотр PDF.
-                            <a href={file.url} download={file.fileName} className="text-blue-600 hover:underline ml-2">
-                              Скачайте файл
-                            </a> для просмотра.
-                          </p>
+                          <div className="p-8 text-center">
+                            <p className="text-gray-600 mb-4">
+                              Ваш браузер не поддерживает встроенный просмотр PDF.
+                            </p>
+                            <a
+                              href={file.url}
+                              download={file.fileName}
+                              className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md font-medium"
+                            >
+                              Скачать PDF документ
+                            </a>
+                          </div>
                         </iframe>
                       </div>
                     ) : (
-                      <div className="text-center py-8 bg-white rounded border-2 border-dashed border-gray-300">
-                        <FileText className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-                        <p className="text-gray-600 mb-4">Файл готов к скачиванию</p>
-                        <a
-                          href={file.url}
-                          download={file.fileName}
-                          className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md font-medium"
-                        >
-                          Скачать файл
-                        </a>
+                      <div className="p-6">
+                        <div className="text-center py-8 bg-gray-50 rounded border-2 border-dashed border-gray-300">
+                          <FileText className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                          <p className="text-gray-600 mb-4">Файл готов к скачиванию</p>
+                          <a
+                            href={file.url}
+                            download={file.fileName}
+                            className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md font-medium"
+                          >
+                            Скачать файл
+                          </a>
+                        </div>
                       </div>
                     )}
                   </div>
