@@ -292,78 +292,203 @@ export default async function MaterialPage({ params }: { params: { id: string } 
           </div>
         )}
 
-        {/* PDF или файл */}
-        {(material.type === 'pdf' || material.type === 'file') && material.fileUrl && (
-          <div className="mb-6 bg-gray-50 rounded-lg p-4 md:p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-              <div>
-                <h3 className="font-semibold text-base md:text-lg mb-1">
-                  {material.type === 'pdf' ? 'PDF документ' : 'Файл'}
-                </h3>
-                {material.fileName && (
-                  <p className="text-xs md:text-sm text-gray-600 break-words">
-                    {material.fileName}
-                    {material.fileSize && ` (${(material.fileSize / 1024 / 1024).toFixed(2)} MB)`}
-                  </p>
-                )}
-              </div>
-              <a
-                href={material.fileUrl}
-                download
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md font-medium text-sm md:text-base whitespace-nowrap"
-              >
-                Скачать
-              </a>
-            </div>
-            {material.type === 'pdf' ? (
-              <div className="w-full aspect-square md:aspect-[4/3] border rounded-lg overflow-hidden bg-white">
-                <iframe
-                  src={material.fileUrl}
-                  className="w-full h-full border-0"
-                  title={material.title}
-                >
-                  <p>
-                    Ваш браузер не поддерживает просмотр PDF.
-                    <a href={material.fileUrl} download>Скачайте файл</a> для просмотра.
-                  </p>
-                </iframe>
-              </div>
-            ) : (
-              <div className="text-center py-6 md:py-8 bg-white rounded border-2 border-dashed border-gray-300">
-                <p className="text-gray-600 mb-4 text-sm md:text-base">Файл готов к скачиванию</p>
-                <a
-                  href={material.fileUrl}
-                  download
-                  className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md font-medium text-sm md:text-base"
-                >
-                  Скачать файл
-                </a>
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Текстовый контент */}
         {material.content && (() => {
           try {
             const contentData = JSON.parse(material.content)
-            if (contentData.text) {
+            if (contentData.text && contentData.text.trim()) {
               return (
                 <div
-                  className="prose prose-lg max-w-none mt-8"
+                  className="prose prose-lg max-w-none mb-8"
                   dangerouslySetInnerHTML={{ __html: contentData.text }}
                 />
               )
             }
           } catch {
             // Если не JSON, значит обычный текст
-            return (
-              <div
-                className="prose prose-lg max-w-none mt-8"
-                dangerouslySetInnerHTML={{ __html: material.content }}
-              />
-            )
+            if (material.content.trim()) {
+              return (
+                <div
+                  className="prose prose-lg max-w-none mb-8"
+                  dangerouslySetInnerHTML={{ __html: material.content }}
+                />
+              )
+            }
           }
+          return null
+        })()}
+
+        {/* Файлы из структурированного контента */}
+        {material.content && (() => {
+          try {
+            const contentData = JSON.parse(material.content)
+            if (contentData.files && Array.isArray(contentData.files) && contentData.files.length > 0) {
+              // Группируем файлы по типам
+              const pdfFiles = contentData.files.filter((f: any) => {
+                const ext = f.fileName?.split('.').pop()?.toLowerCase()
+                return ext === 'pdf'
+              })
+              const wordFiles = contentData.files.filter((f: any) => {
+                const ext = f.fileName?.split('.').pop()?.toLowerCase()
+                return ext === 'doc' || ext === 'docx'
+              })
+              const otherFiles = contentData.files.filter((f: any) => {
+                const ext = f.fileName?.split('.').pop()?.toLowerCase()
+                return ext !== 'pdf' && ext !== 'doc' && ext !== 'docx'
+              })
+
+              return (
+                <div className="space-y-6">
+                  {/* PDF файлы */}
+                  {pdfFiles.length > 0 && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-gray-900">PDF документы</h3>
+                      {pdfFiles.map((file: any, index: number) => (
+                        <div key={index} className="bg-gray-50 rounded-lg p-4 md:p-6">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                            <div>
+                              <h4 className="font-semibold text-base md:text-lg mb-1">PDF документ</h4>
+                              <p className="text-xs md:text-sm text-gray-600 break-words">
+                                {file.fileName}
+                                {file.fileSize && ` (${(file.fileSize / 1024 / 1024).toFixed(2)} MB)`}
+                              </p>
+                            </div>
+                            <a
+                              href={file.url}
+                              download
+                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md font-medium text-sm md:text-base whitespace-nowrap"
+                            >
+                              Скачать
+                            </a>
+                          </div>
+                          <div className="w-full aspect-square md:aspect-[4/3] border rounded-lg overflow-hidden bg-white">
+                            <iframe
+                              src={file.url}
+                              className="w-full h-full border-0"
+                              title={file.fileName}
+                            >
+                              <p>
+                                Ваш браузер не поддерживает просмотр PDF.
+                                <a href={file.url} download>Скачайте файл</a> для просмотра.
+                              </p>
+                            </iframe>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Word файлы */}
+                  {wordFiles.length > 0 && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-gray-900">Word документы</h3>
+                      {wordFiles.map((file: any, index: number) => (
+                        <div key={index} className="bg-gray-50 rounded-lg p-4 md:p-6">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div>
+                              <h4 className="font-semibold text-base md:text-lg mb-1">Word документ</h4>
+                              <p className="text-xs md:text-sm text-gray-600 break-words">
+                                {file.fileName}
+                                {file.fileSize && ` (${(file.fileSize / 1024 / 1024).toFixed(2)} MB)`}
+                              </p>
+                            </div>
+                            <a
+                              href={file.url}
+                              download
+                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md font-medium text-sm md:text-base whitespace-nowrap"
+                            >
+                              Скачать
+                            </a>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Другие файлы */}
+                  {otherFiles.length > 0 && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-gray-900">Другие файлы</h3>
+                      {otherFiles.map((file: any, index: number) => (
+                        <div key={index} className="bg-gray-50 rounded-lg p-4 md:p-6">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div>
+                              <h4 className="font-semibold text-base md:text-lg mb-1">Файл</h4>
+                              <p className="text-xs md:text-sm text-gray-600 break-words">
+                                {file.fileName}
+                                {file.fileSize && ` (${(file.fileSize / 1024 / 1024).toFixed(2)} MB)`}
+                              </p>
+                            </div>
+                            <a
+                              href={file.url}
+                              download
+                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md font-medium text-sm md:text-base whitespace-nowrap"
+                            >
+                              Скачать
+                            </a>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            }
+          } catch {
+            // Если не JSON, проверяем старый формат с fileUrl
+            if (material.fileUrl) {
+              return (
+                <div className="mb-6 bg-gray-50 rounded-lg p-4 md:p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                    <div>
+                      <h3 className="font-semibold text-base md:text-lg mb-1">
+                        {material.type === 'pdf' ? 'PDF документ' : 'Файл'}
+                      </h3>
+                      {material.fileName && (
+                        <p className="text-xs md:text-sm text-gray-600 break-words">
+                          {material.fileName}
+                          {material.fileSize && ` (${(material.fileSize / 1024 / 1024).toFixed(2)} MB)`}
+                        </p>
+                      )}
+                    </div>
+                    <a
+                      href={material.fileUrl}
+                      download
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md font-medium text-sm md:text-base whitespace-nowrap"
+                    >
+                      Скачать
+                    </a>
+                  </div>
+                  {material.type === 'pdf' ? (
+                    <div className="w-full aspect-square md:aspect-[4/3] border rounded-lg overflow-hidden bg-white">
+                      <iframe
+                        src={material.fileUrl}
+                        className="w-full h-full border-0"
+                        title={material.title}
+                      >
+                        <p>
+                          Ваш браузер не поддерживает просмотр PDF.
+                          <a href={material.fileUrl} download>Скачайте файл</a> для просмотра.
+                        </p>
+                      </iframe>
+                    </div>
+                  ) : (
+                    <div className="text-center py-6 md:py-8 bg-white rounded border-2 border-dashed border-gray-300">
+                      <p className="text-gray-600 mb-4 text-sm md:text-base">Файл готов к скачиванию</p>
+                      <a
+                        href={material.fileUrl}
+                        download
+                        className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md font-medium text-sm md:text-base"
+                      >
+                        Скачать файл
+                      </a>
+                    </div>
+                  )}
+                </div>
+              )
+            }
+          }
+          return null
         })()}
 
             {/* Навигация между материалами */}
