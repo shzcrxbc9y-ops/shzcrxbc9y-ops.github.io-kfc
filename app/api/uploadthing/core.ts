@@ -1,6 +1,15 @@
 import { createUploadthing, type FileRouter } from 'uploadthing/next'
 
-const f = createUploadthing()
+// Получаем токен из переменных окружения
+const token = process.env.UPLOADTHING_TOKEN || process.env.UPLOADTHING_SECRET
+
+if (!token) {
+  throw new Error('Missing UPLOADTHING_TOKEN or UPLOADTHING_SECRET environment variable')
+}
+
+const f = createUploadthing({
+  token: token,
+})
 
 export const ourFileRouter = {
   // Загрузка изображений
