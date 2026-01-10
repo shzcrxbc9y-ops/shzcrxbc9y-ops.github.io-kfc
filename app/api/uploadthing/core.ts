@@ -7,7 +7,6 @@ let token: string
 if (process.env.UPLOADTHING_TOKEN) {
   // Используем готовый токен напрямую (убираем пробелы)
   token = process.env.UPLOADTHING_TOKEN.trim()
-  console.log('Using UPLOADTHING_TOKEN from environment')
 } else if (process.env.UPLOADTHING_SECRET && process.env.UPLOADTHING_APP_ID) {
   // Создаем токен из отдельных переменных
   const apiKey = process.env.UPLOADTHING_SECRET.trim()
@@ -21,23 +20,8 @@ if (process.env.UPLOADTHING_TOKEN) {
   }
 
   token = Buffer.from(JSON.stringify(tokenData)).toString('base64')
-  console.log('Created token from UPLOADTHING_SECRET and UPLOADTHING_APP_ID')
 } else {
   throw new Error('Missing UPLOADTHING_TOKEN or (UPLOADTHING_SECRET and UPLOADTHING_APP_ID) environment variables')
-}
-
-// Валидация токена перед использованием
-try {
-  const decoded = JSON.parse(Buffer.from(token, 'base64').toString('utf-8'))
-  if (!decoded.apiKey || !decoded.appId || !Array.isArray(decoded.regions)) {
-    console.error('Token is invalid. Expected format: { apiKey: string, appId: string, regions: string[] }')
-    console.error('Decoded token:', decoded)
-    throw new Error('Invalid token format')
-  }
-  console.log('Token validated successfully. AppId:', decoded.appId)
-} catch (error: any) {
-  console.error('Failed to decode token:', error.message)
-  throw new Error(`Invalid token: must be a valid base64-encoded JSON object. Error: ${error.message}`)
 }
 
 const f = createUploadthing({
