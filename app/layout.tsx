@@ -9,13 +9,19 @@ const inter = Inter({ subsets: ['latin', 'cyrillic'] })
 export const metadata: Metadata = {
   title: 'KFC Training Platform',
   description: 'Платформа обучения сотрудников KFC',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes',
-  themeColor: '#2563eb',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
     title: 'KFC Training',
   },
+}
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: '#2563eb',
 }
 
 export default function RootLayout({
