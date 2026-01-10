@@ -10,7 +10,7 @@ export async function POST() {
   cookieStore.set('auth-token', '', {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction ? 'none' : 'lax',
+    sameSite: 'lax',
     maxAge: 0,
     path: '/',
   })
