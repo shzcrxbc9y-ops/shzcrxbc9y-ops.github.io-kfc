@@ -57,11 +57,13 @@ export async function POST(request: NextRequest) {
 
     // Устанавливаем cookie
     const cookieStore = await cookies()
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1'
     cookieStore.set('auth-token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 дней
+      path: '/',
     })
 
     return NextResponse.json({
@@ -96,7 +98,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         message: 'Ошибка входа',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        error: process.env.NODE_ENV === 'development' || process.env.VERCEL === '1' ? error.message : undefined
       },
       { status: 500 }
     )

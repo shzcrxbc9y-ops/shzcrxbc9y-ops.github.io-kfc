@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         message: 'Ошибка регистрации',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        error: process.env.NODE_ENV === 'development' || process.env.VERCEL === '1' ? error.message : undefined
       },
       { status: 500 }
     )
