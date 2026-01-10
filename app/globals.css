@@ -77,3 +77,28 @@ body {
     @apply w-full h-auto max-h-[400px] object-contain rounded-lg;
   }
 }
+
+/* Стили для UploadThing кнопки - профессиональный вид */
+.ut-button {
+  background-color: #1f2937 !important;
+  color: white !important;
+  font-weight: 500 !important;
+  padding: 0.625rem 1rem !important;
+  border-radius: 0.375rem !important;
+  border: none !important;
+  transition: background-color 0.2s ease !important;
+  cursor: pointer !important;
+  font-size: 0.875rem !important;
+}
+
+.ut-button:hover {
+  background-color: #111827 !important;
+}
+
+.ut-button:active {
+  background-color: #0f172a !important;
+}
+
+.ut-allowed-content {
+  display: none !important;
+}

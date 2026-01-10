@@ -79,44 +79,53 @@ export default function FileUploader({
     }
   }
 
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes'
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  }
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        {getIcon()}
-        <span className="font-medium">
-          {fileType === 'image' && 'Изображения'}
-          {fileType === 'video' && 'Видео'}
-          {fileType === 'audio' && 'Аудио'}
-          {fileType === 'file' && 'Файлы'}
-        </span>
+      <div className="border border-gray-300 rounded-lg p-4 bg-white">
+        <label className="block text-sm font-medium text-gray-700 mb-3">
+          {fileType === 'image' && 'Загрузить изображения'}
+          {fileType === 'video' && 'Загрузить видео'}
+          {fileType === 'audio' && 'Загрузить аудио'}
+          {fileType === 'file' && 'Загрузить файлы'}
+        </label>
+        <UploadButton
+          endpoint={getUploadEndpoint()}
+          onClientUploadComplete={handleUploadComplete}
+          onUploadError={handleUploadError}
+        />
       </div>
 
-      <UploadButton
-        endpoint={getUploadEndpoint()}
-        onClientUploadComplete={handleUploadComplete}
-        onUploadError={handleUploadError}
-        className="ut-button:bg-blue-600 ut-button:hover:bg-blue-700"
-      />
-
       {uploadedFiles.length > 0 && (
-        <div className="mt-4 space-y-2">
-          <p className="text-sm font-medium text-gray-700">
-            Загружено файлов: {uploadedFiles.length}
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <div className="space-y-3">
+          <div className="text-sm text-gray-600 font-medium">
+            Загружено: {uploadedFiles.length} {uploadedFiles.length === 1 ? 'файл' : 'файлов'}
+          </div>
+          <div className="space-y-2">
             {uploadedFiles.map((file, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+                className="flex items-center justify-between p-3 bg-gray-50 rounded border border-gray-200 hover:bg-gray-100 transition-colors"
               >
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  {getIcon()}
-                  <span className="text-sm text-gray-700 truncate">
-                    {file.fileName}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    ({(file.fileSize / 1024 / 1024).toFixed(2)} MB)
-                  </span>
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="text-gray-400 flex-shrink-0">
+                    {getIcon()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-gray-800 truncate">
+                      {file.fileName}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-0.5">
+                      {formatFileSize(file.fileSize)}
+                    </div>
+                  </div>
                 </div>
                 {onRemoveFile && (
                   <button
@@ -126,7 +135,8 @@ export default function FileUploader({
                       onUploadComplete(newFiles)
                       onRemoveFile(index)
                     }}
-                    className="ml-2 p-1 text-red-600 hover:text-red-700"
+                    className="ml-3 p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors flex-shrink-0"
+                    title="Удалить файл"
                   >
                     <X className="w-4 h-4" />
                   </button>
