@@ -16,6 +16,16 @@ const nextConfig = {
   // Отключаем статическую генерацию для страниц с динамическим контентом
   experimental: {
     missingSuspenseWithCSRBailout: false,
+    outputFileTracingExcludes: {
+      '*': [
+        'public/videos/**/*',
+        'public/audio/**/*',
+        'public/images/**/*',
+        'public/files/**/*',
+        'public/pdfs/**/*',
+        'public/presentations/**/*',
+      ],
+    },
   },
 }
 

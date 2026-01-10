@@ -6,3 +6,9 @@ node_modules
 prisma/dev.db
 scripts
 информация
+public/videos
+public/audio
+public/images
+public/files
+public/pdfs
+public/presentations
