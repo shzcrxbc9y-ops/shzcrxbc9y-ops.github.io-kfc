@@ -1,11 +1,8 @@
-import { getCurrentUser } from '@/lib/auth'
 import { requireAuth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
-import { formatDate } from '@/lib/utils'
-import TestsList from '@/components/TestsList'
+import { AdminTestStationCard } from '@/components/AdminTestStationCard'
 
 export default async function AdminTestsPage() {
   try {
@@ -14,6 +11,30 @@ export default async function AdminTestsPage() {
     redirect('/dashboard')
   }
 
+  // Получаем станции с разделами и тестами
+  const stations = await prisma.station.findMany({
+    include: {
+      sections: {
+        include: {
+          tests: {
+            include: {
+              _count: {
+                select: {
+                  questions: true,
+                  results: true,
+                },
+              },
+            },
+            orderBy: { createdAt: 'desc' },
+          },
+        },
+        orderBy: { order: 'asc' },
+      },
+    },
+    orderBy: { order: 'asc' },
+  })
+
+  // Получаем все тесты для статистики
   const tests = await prisma.test.findMany({
     include: {
       section: {
@@ -106,8 +127,46 @@ export default async function AdminTestsPage() {
           </div>
         )}
 
-        {/* Список тестов */}
-        <TestsList tests={tests} />
+        {/* Список тестов, сгруппированных по станциям */}
+        {tests.length === 0 ? (
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-12 text-center">
+            <div className="text-gray-400 mb-4">
+              <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Нет тестов</h3>
+            <p className="text-gray-600 mb-4">Создайте первый тест для начала работы</p>
+            <Link
+              href="/admin/tests/new"
+              className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+            >
+              Создать тест
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {stations.map((station) => {
+              // Подсчитываем общее количество тестов в станции
+              const stationTestsCount = station.sections.reduce(
+                (sum, section) => sum + section.tests.length, 0
+              )
+
+              // Показываем только станции с тестами
+              if (stationTestsCount === 0) {
+                return null
+              }
+
+              return (
+                <AdminTestStationCard
+                  key={station.id}
+                  station={station}
+                  stationTestsCount={stationTestsCount}
+                />
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )
