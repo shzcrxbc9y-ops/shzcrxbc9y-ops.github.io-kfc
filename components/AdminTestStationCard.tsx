@@ -37,6 +37,9 @@ interface AdminTestStationCardProps {
 export function AdminTestStationCard({ station, stationTestsCount }: AdminTestStationCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
+  // Собираем все тесты из всех разделов в один массив
+  const allTests = station.sections.flatMap(section => section.tests)
+
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
       {/* Заголовок станции с кнопкой */}
@@ -57,10 +60,6 @@ export function AdminTestStationCard({ station, stationTestsCount }: AdminTestSt
                 )}
                 <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-gray-600">
                   <span className="flex items-center space-x-1">
-                    <FolderTree className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span>{station.sections.length} разделов</span>
-                  </span>
-                  <span className="flex items-center space-x-1">
                     <FileText className="w-3 h-3 sm:w-4 sm:h-4" />
                     <span>{stationTestsCount} тестов</span>
                   </span>
@@ -78,61 +77,16 @@ export function AdminTestStationCard({ station, stationTestsCount }: AdminTestSt
         </div>
       </button>
 
-      {/* Разделы (показываются при раскрытии) */}
-      {isExpanded && (
-        <div className="p-4 sm:p-6">
-          {station.sections.length === 0 ? (
-            <div className="text-center text-gray-500 py-6">
-              Разделы пока не добавлены
-            </div>
-          ) : (
-            <div className="space-y-4 sm:space-y-6">
-              {station.sections.map((section) => (
-                <AdminTestSectionCard key={section.id} section={section} />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
-function AdminTestSectionCard({ section }: { section: Section }) {
-  const [isExpanded, setIsExpanded] = useState(false)
-
-  return (
-    <div className="border border-gray-200 rounded-lg bg-gray-50 overflow-hidden">
-      {/* Заголовок раздела с кнопкой */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 sm:p-5 hover:bg-gray-100 transition-colors text-left"
-      >
-        <div className="flex-1 min-w-0">
-          <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">{section.title}</h3>
-          {section.description && (
-            <p className="text-xs sm:text-sm text-gray-600 mb-3">{section.description}</p>
-          )}
-          <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-500">
-            <FileText className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-            <span>{section.tests.length} {section.tests.length === 1 ? 'тест' : 'тестов'}</span>
-          </div>
-        </div>
-        <div className="flex-shrink-0 ml-4">
-          {isExpanded ? (
-            <ChevronUp className="w-5 h-5 text-gray-600" />
-          ) : (
-            <ChevronDown className="w-5 h-5 text-gray-600" />
-          )}
-        </div>
-      </button>
-
       {/* Тесты (показываются при раскрытии) */}
       {isExpanded && (
-        <div className="p-4 sm:p-5 pt-0">
-          {section.tests.length > 0 ? (
+        <div className="p-4 sm:p-6">
+          {allTests.length === 0 ? (
+            <div className="text-center text-gray-500 py-6">
+              Тесты пока не добавлены
+            </div>
+          ) : (
             <div className="space-y-4 mt-4">
-              {section.tests.map((test) => (
+              {allTests.map((test) => (
                 <div key={test.id} className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 sm:p-6 hover:shadow-md transition-shadow">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
@@ -199,13 +153,10 @@ function AdminTestSectionCard({ section }: { section: Section }) {
                 </div>
               ))}
             </div>
-          ) : (
-            <div className="text-center py-6 text-gray-500 text-sm">
-              Тесты в этом разделе пока не добавлены
-            </div>
           )}
         </div>
       )}
     </div>
   )
 }
+
